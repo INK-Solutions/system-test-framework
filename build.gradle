@@ -2,15 +2,38 @@ plugins {
     id 'java'
 }
 
-group 'ink.software'
-version '1.0-SNAPSHOT'
+apply plugin: 'maven-publish'
+
+group 'com.ink.software'
+version '3.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
 dependencies {
+    implementation 'com.guicedee.services:sl4j:1.0.13.5'
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
+    implementation 'org.skyscreamer:jsonassert:1.5.1'
+    implementation 'com.jayway.jsonpath:json-path:2.7.0'
+    implementation 'org.springframework:spring-test:5.3.22'
+    implementation 'org.springframework:spring-web:5.3.22'
+    implementation 'org.testcontainers:postgresql:1.17.3'
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    implementation 'org.springframework.boot:spring-boot-starter-test:2.4.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
