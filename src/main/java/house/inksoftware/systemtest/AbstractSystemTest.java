@@ -1,11 +1,10 @@
-package com.ink.software.systemtest;
+package house.inksoftware.systemtest;
 
-import com.ink.software.systemtest.db.InitialDataPopulation;
-import com.ink.software.systemtest.db.PostgresqlContainer;
+import house.inksoftware.systemtest.db.InitialDataPopulation;
+import house.inksoftware.systemtest.db.PostgresqlContainer;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;

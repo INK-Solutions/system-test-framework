@@ -1,4 +1,4 @@
-package com.ink.software.systemtest.domain.context;
+package house.inksoftware.systemtest.domain.context;
 
 import com.google.common.base.Preconditions;
 import lombok.Setter;

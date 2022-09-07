@@ -1,4 +1,4 @@
-package com.ink.software.systemtest.db;
+package house.inksoftware.systemtest.db;
 
 import lombok.extern.slf4j.Slf4j;
 import org.testcontainers.containers.PostgreSQLContainer;

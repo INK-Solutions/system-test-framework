@@ -1,7 +1,7 @@
-package com.ink.software.systemtest.domain.steps;
+package house.inksoftware.systemtest.domain.steps;
 
 
-import com.ink.software.systemtest.domain.utils.RestUtils;
+import house.inksoftware.systemtest.domain.utils.RestUtils;
 
 public interface RestResponseCallbackFunction {
     void onResponseReceived(RestUtils.RestResponse restResponse);

@@ -1,8 +1,8 @@
-package com.ink.software.systemtest.domain.steps;
+package house.inksoftware.systemtest.domain.steps;
 
-import com.ink.software.systemtest.domain.context.TestExecutionContext;
-import com.ink.software.systemtest.domain.utils.JsonUtils;
-import com.ink.software.systemtest.domain.utils.RestUtils;
+import house.inksoftware.systemtest.domain.context.TestExecutionContext;
+import house.inksoftware.systemtest.domain.utils.JsonUtils;
+import house.inksoftware.systemtest.domain.utils.RestUtils;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
@@ -15,9 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ink.software.systemtest.domain.steps.ResponseStepAssertions.assertResponseIsCorrect;
-import static com.ink.software.systemtest.domain.utils.FileUtils.readFileContent;
-import static com.ink.software.systemtest.domain.utils.JsonUtils.buildDynamicJson;
+import static house.inksoftware.systemtest.domain.steps.ResponseStepAssertions.assertResponseIsCorrect;
+import static house.inksoftware.systemtest.domain.utils.FileUtils.readFileContent;
+import static house.inksoftware.systemtest.domain.utils.JsonUtils.buildDynamicJson;
 
 
 @Data

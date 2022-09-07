@@ -1,7 +1,7 @@
-package com.ink.software.systemtest.domain.steps;
+package house.inksoftware.systemtest.domain.steps;
 
-import com.ink.software.systemtest.domain.utils.JsonUtils;
-import com.ink.software.systemtest.domain.utils.RestUtils;
+import house.inksoftware.systemtest.domain.utils.JsonUtils;
+import house.inksoftware.systemtest.domain.utils.RestUtils;
 import org.json.JSONException;
 import org.junit.Assert;
 

@@ -1,4 +1,4 @@
-package com.ink.software.systemtest.domain.steps;
+package house.inksoftware.systemtest.domain.steps;
 
 import com.jayway.jsonpath.JsonPath;
 import lombok.Data;

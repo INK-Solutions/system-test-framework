@@ -1,6 +1,6 @@
-package com.ink.software.systemtest.domain.steps;
+package house.inksoftware.systemtest.domain.steps;
 
-import com.ink.software.systemtest.domain.utils.JsonUtils;
+import house.inksoftware.systemtest.domain.utils.JsonUtils;
 import lombok.Data;
 
 import java.util.ArrayList;

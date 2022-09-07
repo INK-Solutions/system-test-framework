@@ -1,4 +1,4 @@
-package com.ink.software.systemtest.domain.utils;
+package house.inksoftware.systemtest.domain.utils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;

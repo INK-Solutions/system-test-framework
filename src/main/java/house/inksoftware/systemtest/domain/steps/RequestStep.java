@@ -1,6 +1,6 @@
-package com.ink.software.systemtest.domain.steps;
+package house.inksoftware.systemtest.domain.steps;
 
-import com.ink.software.systemtest.domain.utils.JsonUtils;
+import house.inksoftware.systemtest.domain.utils.JsonUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import lombok.Data;

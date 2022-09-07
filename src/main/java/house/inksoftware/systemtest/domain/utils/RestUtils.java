@@ -1,6 +1,6 @@
-package com.ink.software.systemtest.domain.utils;
+package house.inksoftware.systemtest.domain.utils;
 
-import com.ink.software.systemtest.domain.steps.RequestStep;
+import house.inksoftware.systemtest.domain.steps.RequestStep;
 import com.jayway.jsonpath.JsonPath;
 import lombok.Data;
 import org.springframework.boot.test.web.client.TestRestTemplate;

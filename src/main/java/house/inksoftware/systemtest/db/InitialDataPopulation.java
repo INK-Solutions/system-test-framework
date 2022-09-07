@@ -1,4 +1,4 @@
-package com.ink.software.systemtest.db;
+package house.inksoftware.systemtest.db;
 
 import com.google.common.io.Resources;
 import lombok.RequiredArgsConstructor;

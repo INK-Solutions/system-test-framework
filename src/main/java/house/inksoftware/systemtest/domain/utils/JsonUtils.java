@@ -1,4 +1,4 @@
-package com.ink.software.systemtest.domain.utils;
+package house.inksoftware.systemtest.domain.utils;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
