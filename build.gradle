@@ -4,10 +4,11 @@ plugins {
 
 apply plugin: 'maven-publish'
 apply plugin: 'maven'
-//apply plugin: 'signing'
+apply plugin: 'signing'
 
 group 'house.inksoftware'
-version '3.0-SNAPSHOT'
+version '6.0'
+sourceCompatibility = '8'
 
 repositories {
     mavenCentral()
@@ -25,9 +26,9 @@ artifacts {
     archives javadocJar, sourcesJar
 }
 
-//signing {
-//    sign configurations.archives
-//}
+signing {
+    sign configurations.archives
+}
 
 publishing {
     publications {
@@ -40,14 +41,14 @@ publishing {
 uploadArchives {
     repositories {
         mavenDeployer {
-//            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
             repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                authentication(userName: 'ivan.inksoftware', password: 'mXsYrMGXQ0CGQF7tsd5M%')
             }
 
             snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                authentication(userName: 'ivan.inksoftware', password: 'mXsYrMGXQ0CGQF7tsd5M%')
             }
 
             pom.project {

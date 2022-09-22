@@ -38,7 +38,7 @@ public class RestUtils {
 
             return new HttpEntity<>(parameters, headers);
         } else {
-            return new HttpEntity<>(requestStep.getBody(), headers);
+            return new HttpEntity<>(requestStep.getBody().equals("{}") ? null : requestStep.getBody(), headers);
         }
     }
 

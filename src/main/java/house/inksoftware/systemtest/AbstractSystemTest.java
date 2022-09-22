@@ -1,7 +1,7 @@
 package house.inksoftware.systemtest;
 
+import house.inksoftware.systemtest.configuration.infrastructure.SystemTestResourceLauncher;
 import house.inksoftware.systemtest.db.InitialDataPopulation;
-import house.inksoftware.systemtest.db.PostgresqlContainer;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -10,31 +10,27 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+
 @RunWith(SpringRunner.class)
 @Import({InitialDataPopulation.class})
 public abstract class AbstractSystemTest {
-    protected TestRestTemplate restTemplate;
-
-    private InitialDataPopulation initialDataPopulation;
+    private TestRestTemplate restTemplate;
 
     @LocalServerPort
     protected int port;
 
-    static {
-        String usecontainer = System.getenv("internal.integration.usecontainer");
-        if (usecontainer==null)
-            PostgresqlContainer.initialise();
-    }
-
     @Before
     public void setup() {
-        initialDataPopulation.populate();
+        List<SystemTestResourceLauncher> launchers = resourceLaunchers();
+        launchers.forEach(SystemTestResourceLauncher::setup);
     }
 
     @AfterClass
-    public static void shutDown() {
-        String usecontainer = System.getenv("internal.integration.usecontainer");
-        if (usecontainer==null)
-            PostgresqlContainer.shutdown();
+    public void shutdown() {
+        resourceLaunchers()
+                .forEach(SystemTestResourceLauncher::shutdown);
     }
+
+    public abstract List<SystemTestResourceLauncher> resourceLaunchers();
 }

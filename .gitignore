@@ -37,3 +37,6 @@ build/
 mvnw
 mvnw.cmd
 /src/main/resources/application-local.properties
+
+
+*.gpg
