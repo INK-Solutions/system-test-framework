@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static house.inksoftware.systemtest.domain.steps.ResponseStepAssertions.assertResponseIsCorrect;
-import static house.inksoftware.systemtest.domain.utils.FileUtils.readFileContentFromDir;
+import static house.inksoftware.systemtest.domain.utils.FileUtils.readFileContent;
 import static house.inksoftware.systemtest.domain.utils.JsonUtils.buildDynamicJson;
 
 
@@ -45,7 +45,7 @@ public class StepExecutorService {
     private RequestStep toRequestStep(String stepName, List<JsonUtils.JsonRequestPlaceholder> placeholders) throws Exception {
         Map<String, Object> params = new HashMap<>();
         placeholders.forEach(placeholder -> params.put(placeholder.getName(), placeholder.getValue()));
-        String templatedContent = readFileContentFromDir(baseFolder + stepName + "/" + "request");
+        String templatedContent = readFileContent(baseFolder + stepName + "/" + "request");
 
         return RequestStep.from(buildDynamicJson(templatedContent, params), baseFolder, stepName);
     }
@@ -53,7 +53,7 @@ public class StepExecutorService {
     private ResponseStep toResponseStep(String step, RestUtils.RestResponse restResponse, List<JsonUtils.JsonResponsePlaceholder> placeholders) throws Exception {
         Map<String, Object> params = new HashMap<>();
         placeholders.forEach(placeholder -> params.put(placeholder.getLogicalName(), restResponse.read(placeholder.getJsonPath())));
-        String templatedContent = readFileContentFromDir(baseFolder + step + "/" + "response");
+        String templatedContent = readFileContent(baseFolder + step + "/" + "response");
 
         return ResponseStep.from(buildDynamicJson(templatedContent, params));
     }

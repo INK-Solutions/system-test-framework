@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'maven-publish'
 }
 
 apply plugin: 'maven-publish'
@@ -8,7 +7,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 group 'house.inksoftware'
-version '7.0'
+version '6.0'
 sourceCompatibility = '8'
 
 repositories {
