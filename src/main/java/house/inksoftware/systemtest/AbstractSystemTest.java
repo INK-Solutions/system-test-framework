@@ -1,20 +1,21 @@
 package house.inksoftware.systemtest;
 
 import house.inksoftware.systemtest.configuration.infrastructure.SystemTestResourceLauncher;
-import house.inksoftware.systemtest.db.InitialDataPopulation;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 @RunWith(SpringRunner.class)
-@Import({InitialDataPopulation.class})
 public abstract class AbstractSystemTest {
+    private static List<SystemTestResourceLauncher> systemTestResourceLaunchers;
+
     private TestRestTemplate restTemplate;
 
     @LocalServerPort
@@ -22,13 +23,15 @@ public abstract class AbstractSystemTest {
 
     @Before
     public void setup() {
-        List<SystemTestResourceLauncher> launchers = resourceLaunchers();
-        launchers.forEach(SystemTestResourceLauncher::setup);
+        if (isNull(systemTestResourceLaunchers)) {
+            systemTestResourceLaunchers = resourceLaunchers();
+        }
+        systemTestResourceLaunchers.forEach(SystemTestResourceLauncher::setup);
     }
 
     @AfterClass
-    public void shutdown() {
-        resourceLaunchers()
+    public static void shutdown() {
+        systemTestResourceLaunchers
                 .forEach(SystemTestResourceLauncher::shutdown);
     }
 
