@@ -4,7 +4,10 @@
 
 ### What is the System Test Framework?
 
-The System Test Framework is our custom a Java-based testing framework that allows to:
+The System Test Framework is our custom a Java-based testing framework.
+It is business oriented test framework that allows you to define steps that are part of a business processes, and then make sure business process are executed.
+
+The main features:
 
 1. Launch all the infrastructure that your application needs (postgres db, kafka, mocked server)
 2. Launch your application as a spring boot application connected to the infrastructure from step 1.
@@ -99,6 +102,8 @@ Required parameters:
   - name: topic name
   - schema: class of the Avro Schema
   - direction: `publish, read`
+    - `publish` - when tested component is writing to the topic
+    - `read` - when tested component is consuming from topic
 
 ###### Mocked Server
 - path: path to JSON configuration file
@@ -197,7 +202,7 @@ public class DefaultSystemTest extends SystemTest {
 - `rest-request.json` defines a REST call that will be executed in the step.
 - `kafka-request.json` defines an event that will be published to Kafka
 - `rest-response.json` defines an expected REST response
-- `event.json` defines an expected Kafka event that was emitted after request step
+- `event.json` defines an expected Kafka event that is emitted after request step
 - `kafka-request-processed.json` defines an expected Kafka request id that should be emitted after request step
 
 ###### Callbacks
