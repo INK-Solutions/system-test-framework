@@ -48,7 +48,7 @@ public class SystemTest implements TestExecutionListener {
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
 
-    @Autowired
+    @Autowired(required = false)
     private KafkaEventProcessedCallback kafkaEventProcessedCallback;
     private InfrastructureLauncher infrastructureLauncher = new InfrastructureLauncher();
 
@@ -63,7 +63,7 @@ public class SystemTest implements TestExecutionListener {
 
         if (systemTestConfFile.isPresent()) {
             LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
-            infrastructureLauncher.launchDb(infrastructure);
+            infrastructureLauncher.launchDb(testContext, infrastructure);
         }
     }
 

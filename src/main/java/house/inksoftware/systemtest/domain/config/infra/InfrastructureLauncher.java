@@ -1,6 +1,7 @@
 package house.inksoftware.systemtest.domain.config.infra;
 
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
+import house.inksoftware.systemtest.domain.config.infra.db.SystemTestDatabasePopulatorLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.mssql.SystemTestMsSqlLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.postgres.SystemTestPostgresLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.redis.SystemTestRedisLauncher;
@@ -12,6 +13,8 @@ import house.inksoftware.systemtest.domain.kafka.topic.KafkaTopicDefinition;
 import net.minidev.json.JSONArray;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.test.context.TestContext;
+import javax.sql.DataSource;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -23,9 +26,14 @@ public class InfrastructureLauncher {
     public static final Integer MOCKED_SERVER_DEFAULT_WARMUP_SECONDS = 5;
     private final List<SystemTestResourceLauncher> resources = new ArrayList<>();
 
-    public void launchDb(LinkedHashMap<String, Object> config) {
+    public void launchDb(TestContext testContext, LinkedHashMap<String, Object> config) {
         LinkedHashMap<String, String> properties = (LinkedHashMap) config.get("database");
         launchDatabase(properties.get("type"), properties.get("image"));
+
+        String testDataScriptsPath = properties.get("testDataScriptsPath");
+        if (testDataScriptsPath != null && testContext != null) {
+            new SystemTestDatabasePopulatorLauncher(testDataScriptsPath, testContext.getApplicationContext().getBean(DataSource.class)).setup();
+        }
     }
 
     public SystemTestConfiguration launchAllInfra(EmbeddedKafkaBroker kafkaBroker,
@@ -38,8 +46,6 @@ public class InfrastructureLauncher {
         config.forEach((key, value) -> {
             if (key.equals("kafka")) {
                 result.setKafkaConfiguration(launchKafka(kafkaBroker, kafkaEventProcessedCallback, ((JSONArray) ((LinkedHashMap) value).get("topics"))));
-            } else if (key.equals("database")) {
-                launchDatabase((String) ((LinkedHashMap) value).get("type"), (String) ((LinkedHashMap) value).get("image"));
             } else if (key.equals("mockedServer")) {
                 String path = (String) ((LinkedHashMap) value).get("path");
                 Object warmupSeconds = ((LinkedHashMap) value).get("warmupSeconds");

@@ -5,7 +5,6 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.PathNotFoundException;
-import lombok.Data;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +13,7 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,7 +39,9 @@ public class JsonUtils {
         Mustache mustache = factory.compile(new StringReader(text), UUID.randomUUID().toString());
         StringWriter writer = new StringWriter();
         try {
-            mustache.execute(writer, values).flush();
+            FailOnMissingKeyMap map = new FailOnMissingKeyMap();
+            map.putAll(values);
+            mustache.execute(writer, map).flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -58,40 +60,25 @@ public class JsonUtils {
     }
 
 
-    @Data
-    public static class JsonRequestPlaceholder {
-        private final String name;
-        private final Object value;
+            public static class FailOnMissingKeyMap extends HashMap<String, Object> {
+                @Override
+                public boolean containsKey(Object key) {
+                    if (!super.containsKey(key)) {
+                        missingKey(key);
+                    }
+                    return super.containsKey(key);
+                }
 
-        public static JsonRequestPlaceholder of(String name, Object value) {
-            return new JsonRequestPlaceholder(name, value);
-        }
-    }
+                @Override
+                public Object get(Object key) {
+                    if (!super.containsKey(key)) {
+                        missingKey(key);
+                    }
+                    return super.get(key);
+                }
 
-    @Data
-    public static class JsonResponsePlaceholder {
-        private final String logicalName;
-        private final String jsonPath;
-        private final Type type;
-
-        public static JsonResponsePlaceholder ofInt(String logicalName, String jsonPath) {
-            return new JsonResponsePlaceholder(logicalName, jsonPath, Type.INT);
-        }
-
-        public static JsonResponsePlaceholder ofInt(String nameAndPath) {
-            return new JsonResponsePlaceholder(nameAndPath, nameAndPath, Type.INT);
-        }
-
-        public static JsonResponsePlaceholder ofString(String logicalName, String jsonPath) {
-            return new JsonResponsePlaceholder(logicalName, jsonPath, Type.STRING);
-        }
-
-        public static JsonResponsePlaceholder ofString(String nameAndPath) {
-            return ofString(nameAndPath, nameAndPath);
-        }
-
-        public enum Type {
-            INT, STRING
-        }
-    }
+                private void missingKey(Object key) {
+                    throw new IllegalStateException("Missing required placeholder: " + key +". Make sure you store it in callback context for one of previous calls. More info: https://github.com/INK-Solutions/system-test-framework#callbacks");
+                }
+            }
 }
