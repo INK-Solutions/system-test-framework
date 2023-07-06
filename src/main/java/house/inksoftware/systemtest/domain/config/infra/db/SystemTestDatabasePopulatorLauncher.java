@@ -3,11 +3,10 @@ package house.inksoftware.systemtest.domain.config.infra.db;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.google.common.io.Resources;
 import house.inksoftware.systemtest.domain.config.infra.SystemTestResourceLauncher;
+import house.inksoftware.systemtest.domain.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -42,7 +41,7 @@ public class SystemTestDatabasePopulatorLauncher implements SystemTestResourceLa
         }
 
         try {
-            File folder = new File(Resources.getResource(migrationScriptsPath).getPath());
+            File folder = FileUtils.toFile(migrationScriptsPath);
 
             List<String> sqlFilePaths = orderDbScripts(folder.list());
             for (String sqlFilePath : sqlFilePaths) {

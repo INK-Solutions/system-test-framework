@@ -2,8 +2,10 @@ package house.inksoftware.systemtest.domain.utils;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Resources;
+import lombok.SneakyThrows;
 
 import java.io.File;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -25,5 +27,10 @@ public class FileUtils {
 
     public static String readFile(File file) throws Exception {
         return Resources.toString(file.toURI().toURL(), StandardCharsets.UTF_8);
+    }
+
+    @SneakyThrows
+    public static File toFile(String path) {
+        return new File(URLDecoder.decode(Resources.getResource(path).toURI().toURL().getPath()));
     }
 }
