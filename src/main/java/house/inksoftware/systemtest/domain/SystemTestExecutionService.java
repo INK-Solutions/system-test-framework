@@ -1,6 +1,7 @@
 package house.inksoftware.systemtest.domain;
 
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
+import house.inksoftware.systemtest.domain.context.SystemTestContext;
 import house.inksoftware.systemtest.domain.steps.request.RequestStep;
 import house.inksoftware.systemtest.domain.steps.response.ActualResponse;
 import house.inksoftware.systemtest.domain.steps.request.executable.ExecutableRequestStepFactory;
@@ -26,11 +27,11 @@ public class SystemTestExecutionService {
 
 
     @SneakyThrows
-    public void execute(RequestStep requestStep) {
+    public void execute(RequestStep requestStep, SystemTestContext context) {
         log.info("Executing step: {} ", requestStep.getName());
 
         ActualResponse actualResponse = ExecutableRequestStepFactory
-                .create(basePath.getAbsolutePath(), requestStep)
+                .create(basePath.getAbsolutePath(), requestStep, context)
                 .execute(systemTestConfiguration);
 
         List<ExpectedResponseStep> expectedRestResponseSteps = expectedResponseStepFactory.create(basePath, requestStep.getName());

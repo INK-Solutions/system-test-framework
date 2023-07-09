@@ -42,7 +42,8 @@ public class KafkaTopicDefinition {
             return Arrays.stream(Direction.values())
                     .filter(entry -> entry.shortName.equals(shortName))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Direction with name " + shortName + " not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Direction with name " + shortName + " not found. " +
+                            "Please make sure that your direction for kafka topics is either read/publish"));
         }
 
     }

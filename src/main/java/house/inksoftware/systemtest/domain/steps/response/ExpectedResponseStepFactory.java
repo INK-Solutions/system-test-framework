@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,12 +20,17 @@ public class ExpectedResponseStepFactory {
     @SneakyThrows
     public List<ExpectedResponseStep> create(File basePath, String stepName) {
         String responsesFolder = basePath.getAbsolutePath() + File.separator + stepName + File.separator + "response";
+        File folder = new File(responsesFolder);
 
-        return FileUtils
-                .listFiles(responsesFolder)
-                .stream()
-                .map(fileName -> createStep(responsesFolder + File.separator + fileName))
-                .collect(Collectors.toList());
+        if (!folder.exists()) {
+            return new ArrayList<>();
+        } else {
+            return FileUtils
+                    .listFiles(responsesFolder)
+                    .stream()
+                    .map(fileName -> createStep(responsesFolder + File.separator + fileName))
+                    .collect(Collectors.toList());
+        }
     }
 
     @SneakyThrows

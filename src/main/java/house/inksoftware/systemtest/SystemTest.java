@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,6 @@ import static org.apache.commons.io.FileUtils.listFiles;
 import static org.springframework.test.context.TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS;
 
 @Slf4j
-@TestPropertySource(properties = {"spring.config.location = classpath:application-test.yml, classpath:application.yml"})
 @TestExecutionListeners(value = {SystemTest.class}, mergeMode = MERGE_WITH_DEFAULTS)
 @ActiveProfiles("systemtest")
 @EmbeddedKafka
@@ -59,12 +59,21 @@ public class SystemTest implements TestExecutionListener {
 
     @Override
     public void beforeTestClass(TestContext testContext) throws Exception {
-        Optional<File> systemTestConfFile = findSystemTestConfig();
+        Optional<File> systemTestYaml = findSystemTestYaml();
+        Assert.assertTrue(
+                "File application-systemtest.yml is not found! " +
+                "Please add it if it's not present or rename existing test yml file to application-systemtest.yml",
+                systemTestYaml.isPresent()
+        );
 
-        if (systemTestConfFile.isPresent()) {
-            LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
-            infrastructureLauncher.launchDb(testContext, infrastructure);
-        }
+        Optional<File> systemTestConfFile = findSystemTestConfig();
+        Assert.assertTrue(
+                "File system-test-configuration.json is not found! Please add it and define your infra requirements.",
+                systemTestConfFile.isPresent()
+        );
+
+        LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
+        infrastructureLauncher.launchDb(testContext, infrastructure);
     }
 
     @NotNull
@@ -72,6 +81,14 @@ public class SystemTest implements TestExecutionListener {
         return listFiles(new File(PATH), new String[] {"json"}, true)
                 .stream()
                 .filter(file -> file.getName().equals("system-test-configuration.json"))
+                .findFirst();
+    }
+
+    @NotNull
+    private static Optional<File> findSystemTestYaml() {
+        return listFiles(new File(PATH), new String[] {"yml"}, true)
+                .stream()
+                .filter(file -> file.getName().equals("application-systemtest.yml"))
                 .findFirst();
     }
 
@@ -123,7 +140,7 @@ public class SystemTest implements TestExecutionListener {
 
         for (File stepFile : orderedSteps) {
             RequestStep step = requestStepFactory.toStep(new File(basePath.getPath() + File.separator + stepFile.getName()), context);
-            service.execute(step);
+            service.execute(step, context);
         }
     }
 

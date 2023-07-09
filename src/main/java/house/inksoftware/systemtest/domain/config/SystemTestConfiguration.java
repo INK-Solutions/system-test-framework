@@ -37,6 +37,4 @@ public class SystemTestConfiguration {
         private final TestRestTemplate restTemplate;
         private final Integer port;
     }
-
-
 }
