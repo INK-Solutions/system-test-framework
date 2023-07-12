@@ -212,7 +212,7 @@ test
       /test-name-2
         /step-1
         /step-2
-      /...
+        /...
     system-test-configuration.json
   application-systemtest.yml  
 ```
