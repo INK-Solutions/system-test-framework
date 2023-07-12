@@ -60,6 +60,7 @@ testImplementation 'house.inksoftware:system-test-framework:21.0.0'
 ```
 #### Create configuration
 Create `system-test-configuration.json` in test `resources` directory, that defines your infrastructure.
+**This is mandatory file.**
 
 ###### Full configuration example
 ```json
@@ -81,7 +82,8 @@ Create `system-test-configuration.json` in test `resources` directory, that defi
     },
     "database": {
       "type": "postgres",
-      "image": "postgres:11.1"
+      "image": "postgres:11.1",
+      "testDataScriptsPath": "db/"
     },
     "mockedServer": {
       "path": "tech/example/scenarios/3rd-party-contract.json",
@@ -95,6 +97,7 @@ Create `system-test-configuration.json` in test `resources` directory, that defi
 Required parameters:
 - type: `postgres, mssql, redis`
 - image: container image you want to execute
+- testDataScriptsPath: optional parameter to folder where test data is stored and executed after flyway
 
 ###### Kafka
 Required parameters:
@@ -174,6 +177,8 @@ Example:
 ]
 ```
 
+#### Application configuration file
+Make sure that you application configuration file for system tests is `application-systemtest.yml` 
 
 #### Create system test
 ```
@@ -195,6 +200,22 @@ public class DefaultSystemTest extends SystemTest {
 #### Define test steps
 ###### Directory structure
 ![docs/test-steps-directory-structure.png](docs/test-steps-directory-structure.png)
+
+```
+test
+  /resources
+    /house.ink.software.scenarios
+      /test-name-1
+        /step-1
+        /step-2
+        /...
+      /test-name-2
+        /step-1
+        /step-2
+      /...
+    system-test-configuration.json
+  application-systemtest.yml  
+```
 
 - You can define multiple test flows.
 - Order of test steps is defined by a number at the beginning of test step directory name.
@@ -276,6 +297,33 @@ You can later use in the next test step with `"loanId": {{loanId}}`.
   "kafkaRequestId": "system-test-loan-approval-response-id"
 }
 ```
+
+###### Querying database
+You can define a step where you can validate data stored into database.
+You can also use queried data in your next steps.
+
+1. Create new test step directory.
+2. Create `db-request.json`
+```json
+{
+  "query": "select name as result from main.users where email='system-test@gmail.com'",
+  "resultVariableName": "userName"
+}
+```
+User named will be stored in test context as in userName placeholder.
+
+3. If you want to use user name in next steps, you can do it by using `{{userName}}` placeholder.
+Example:
+###### rest-request.json
+```json
+{
+  "url": "/api/public/user?name={{userName}}",
+  "method": "GET",
+  "body": {
+  }
+}
+```
+
 
 ### License
 
