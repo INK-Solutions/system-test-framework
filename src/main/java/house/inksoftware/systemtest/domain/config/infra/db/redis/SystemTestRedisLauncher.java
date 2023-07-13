@@ -13,9 +13,11 @@ public class SystemTestRedisLauncher implements SystemTestResourceLauncher {
 
     private static GenericContainer container;
     private final String image;
+    private boolean reuseContainer;
 
-    public SystemTestRedisLauncher(String image) {
+    public SystemTestRedisLauncher(String image, boolean reuseContainer) {
         this.image = image;
+        this.reuseContainer = reuseContainer;
     }
 
     @Override
@@ -24,6 +26,7 @@ public class SystemTestRedisLauncher implements SystemTestResourceLauncher {
             container = new GenericContainer<>(DockerImageName.parse(image));
             container.addExposedPort(6379);
             container.setPortBindings(Arrays.asList("6379:6379/tcp"));
+            container.withReuse(reuseContainer);
             container.start();
             LOGGER.info("Starting redis database... ");
         }

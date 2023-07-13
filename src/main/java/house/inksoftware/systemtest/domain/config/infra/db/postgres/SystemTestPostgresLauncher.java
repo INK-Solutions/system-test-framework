@@ -11,9 +11,11 @@ public class SystemTestPostgresLauncher implements SystemTestResourceLauncher {
 
     private static PostgreSQLContainer container;
     private final String image;
+    private boolean reuseContainer;
 
-    public SystemTestPostgresLauncher(String image) {
+    public SystemTestPostgresLauncher(String image, boolean reuseContainer) {
         this.image = image;
+        this.reuseContainer = reuseContainer;
     }
 
     @Override
@@ -21,6 +23,7 @@ public class SystemTestPostgresLauncher implements SystemTestResourceLauncher {
         if (container == null) {
             DockerImageName myImage = DockerImageName.parse(image).asCompatibleSubstituteFor("postgres");
             container = new PostgreSQLContainer(myImage);
+            container.withReuse(reuseContainer);
             container.start();
             System.setProperty("DB_URL", container.getJdbcUrl());
             System.setProperty("DB_USERNAME", container.getUsername());
