@@ -7,7 +7,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 group 'house.inksoftware'
-version '21.2.2'
+version '21.2.1'
 sourceCompatibility = '8'
 def uploadRepoPassword = System.getenv('UPLOAD_ARCHIVE_REPOSITORY_PASSWORD')
 

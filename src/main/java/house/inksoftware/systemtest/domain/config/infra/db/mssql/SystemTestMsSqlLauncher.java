@@ -11,11 +11,9 @@ public class SystemTestMsSqlLauncher implements SystemTestResourceLauncher {
 
     private static MSSQLServerContainer container;
     private final String image;
-    private boolean reuseContainer;
 
-    public SystemTestMsSqlLauncher(String image, boolean reuseContainer) {
+    public SystemTestMsSqlLauncher(String image) {
         this.image = image;
-        this.reuseContainer = reuseContainer;
     }
 
     @Override
@@ -24,7 +22,6 @@ public class SystemTestMsSqlLauncher implements SystemTestResourceLauncher {
             DockerImageName myImage = DockerImageName.parse(image).asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server");
             container = new MSSQLServerContainer(myImage)
                     .acceptLicense();
-            container.withReuse(reuseContainer);
             container.start();
             System.setProperty("DB_URL", container.getJdbcUrl());
             System.setProperty("DB_USERNAME", container.getUsername());
