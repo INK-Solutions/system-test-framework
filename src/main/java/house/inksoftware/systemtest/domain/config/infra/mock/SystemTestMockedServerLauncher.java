@@ -41,7 +41,6 @@ public class SystemTestMockedServerLauncher implements SystemTestResourceLaunche
 
     private final TestRestTemplate restTemplate;
     private final String relativePathToConfig;
-    private final Integer warmupSeconds;
     private GenericContainer container;
 
 
@@ -59,18 +58,16 @@ public class SystemTestMockedServerLauncher implements SystemTestResourceLaunche
                     .withEnv(envVariables);
 
             container.setPortBindings(Arrays.asList("1080:1080/tcp"));
-            container.withReuse(true);
             container.start();
-            Thread.sleep(warmupSeconds * 1000);
-            waitUntilEndpointsAreAvailable(warmupSeconds);
+            waitUntilEndpointsAreAvailable();
             LOGGER.info("Starting test service mock...");
         }
     }
 
-    private void waitUntilEndpointsAreAvailable(int warmupSeconds) {
+    private void waitUntilEndpointsAreAvailable() {
         try {
             await()
-                    .atMost(Duration.of(warmupSeconds, ChronoUnit.SECONDS))
+                    .atMost(Duration.of(5, ChronoUnit.SECONDS))
                     .pollInterval(Duration.of(1, ChronoUnit.SECONDS))
                     .until(() -> restTemplate.getRestTemplate().exchange(URI.create("http://localhost:1080/api/mockserver/status"), HttpMethod.GET, HttpEntity.EMPTY, String.class).getStatusCodeValue() == 200);
         } catch (ConditionTimeoutException e) {

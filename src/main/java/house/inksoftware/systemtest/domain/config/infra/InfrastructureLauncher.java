@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class InfrastructureLauncher {
-    public static final Integer MOCKED_SERVER_DEFAULT_WARMUP_SECONDS = 5;
     private final List<SystemTestResourceLauncher> resources = new ArrayList<>();
 
     public void launchDb(TestContext testContext, LinkedHashMap<String, Object> config) {
@@ -48,8 +47,7 @@ public class InfrastructureLauncher {
                 result.setKafkaConfiguration(launchKafka(kafkaBroker, kafkaEventProcessedCallback, ((JSONArray) ((LinkedHashMap) value).get("topics"))));
             } else if (key.equals("mockedServer")) {
                 String path = (String) ((LinkedHashMap) value).get("path");
-                Object warmupSeconds = ((LinkedHashMap) value).get("warmupSeconds");
-                launchMockedServer(path, warmupSeconds == null ? MOCKED_SERVER_DEFAULT_WARMUP_SECONDS : (int) warmupSeconds, restTemplate);
+                launchMockedServer(path, restTemplate);
             }
         });
 
@@ -78,8 +76,8 @@ public class InfrastructureLauncher {
         resourceLauncher.setup();
     }
 
-    private void launchMockedServer(String path, Integer warmupSeconds, TestRestTemplate restTemplate) {
-        SystemTestMockedServerLauncher mockedServerLauncher = new SystemTestMockedServerLauncher(restTemplate, path, warmupSeconds);
+    private void launchMockedServer(String path, TestRestTemplate restTemplate) {
+        SystemTestMockedServerLauncher mockedServerLauncher = new SystemTestMockedServerLauncher(restTemplate, path);
         resources.add(mockedServerLauncher);
         mockedServerLauncher.setup();
     }
