@@ -49,7 +49,7 @@ public class InfrastructureLauncher {
             } else if (key.equals("mockedServer")) {
                 String path = (String) ((LinkedHashMap) value).get("path");
                 Object warmupSeconds = ((LinkedHashMap) value).get("warmupSeconds");
-                launchMockedServer(path, warmupSeconds == null ? MOCKED_SERVER_DEFAULT_WARMUP_SECONDS : (int) warmupSeconds);
+                launchMockedServer(path, warmupSeconds == null ? MOCKED_SERVER_DEFAULT_WARMUP_SECONDS : (int) warmupSeconds, restTemplate);
             }
         });
 
@@ -78,8 +78,8 @@ public class InfrastructureLauncher {
         resourceLauncher.setup();
     }
 
-    private void launchMockedServer(String path, Integer warmupSeconds) {
-        SystemTestMockedServerLauncher mockedServerLauncher = new SystemTestMockedServerLauncher(path, warmupSeconds);
+    private void launchMockedServer(String path, Integer warmupSeconds, TestRestTemplate restTemplate) {
+        SystemTestMockedServerLauncher mockedServerLauncher = new SystemTestMockedServerLauncher(restTemplate, path, warmupSeconds);
         resources.add(mockedServerLauncher);
         mockedServerLauncher.setup();
     }
