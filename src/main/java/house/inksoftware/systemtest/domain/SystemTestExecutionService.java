@@ -9,6 +9,7 @@ import house.inksoftware.systemtest.domain.steps.response.ExpectedResponseStep;
 import house.inksoftware.systemtest.domain.steps.response.ExpectedResponseStepFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.awaitility.core.ConditionTimeoutException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +39,10 @@ public class SystemTestExecutionService {
         for (ExpectedResponseStep step : expectedRestResponseSteps) {
             try {
                 step.assertResponseIsCorrect(actualResponse);
-            } catch (JSONException e) {
+            } catch (AssertionError | JSONException e) {
                 throw new IllegalStateException("In test: " + basePath.getName() + ", step: " + requestStep.getName() + " json didn't match: " + ExceptionUtils.getStackTrace(e));
+            } catch (ConditionTimeoutException | IllegalStateException e) {
+                throw new IllegalStateException("In test: " + basePath.getName() + ", step: " + requestStep.getName() + "  event not found: " + ExceptionUtils.getStackTrace(e));
             }
         }
 
