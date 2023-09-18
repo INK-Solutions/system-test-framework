@@ -24,6 +24,6 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
     @Override
     public void assertResponseIsCorrect(ActualResponse response) throws JSONException {
         JsonUtils.assertJsonEquals(body, response.body());
-        Assert.assertEquals(((ActualRestResponse) response).getStatusCode().value(), httpCode);
+        Assert.assertEquals(((ActualRestResponse) response).getStatusCode(), httpCode);
     }
 }

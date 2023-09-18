@@ -1,15 +1,12 @@
 plugins {
     id 'java'
+    id 'maven-publish'
+    id 'signing'
 }
 
-apply plugin: 'maven-publish'
-apply plugin: 'maven'
-apply plugin: 'signing'
-
 group 'house.inksoftware'
-version '21.2.3'
-sourceCompatibility = '8'
-def uploadRepoPassword = System.getenv('UPLOAD_ARCHIVE_REPOSITORY_PASSWORD')
+version '23.0.0'
+sourceCompatibility = '17'
 
 repositories {
     mavenCentral()
@@ -18,6 +15,7 @@ repositories {
         url "https://packages.confluent.io/maven"
     }
 }
+
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
     from javadoc
@@ -27,15 +25,12 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
+
 artifacts {
     archives javadocJar, sourcesJar
 }
 
 signing {
-    def signingKeyId = findProperty("signingKeyId")
-    def signingKey = findProperty("signingKey")
-    def signingPassword = findProperty("signingPassword")
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
     sign configurations.archives
 }
 
@@ -43,49 +38,46 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-        }
-    }
-}
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            artifact sourcesJar
+            artifact javadocJar
 
-            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: 'ivan.inksoftware', password: uploadRepoPassword)
-            }
-
-            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: 'ivan.inksoftware', password: uploadRepoPassword)
-            }
-
-            pom.project {
-                name 'system test framework'
-                packaging 'jar'
-                description 'A application used as an example on how to set up pushing  its components to the Central Repository.'
-                url 'https://inksoftware.house/'
+            pom {
+                name = 'system test framework'
+                packaging = 'jar'
+                description = 'A application used as an example on how to set up pushing its components to the Central Repository.'
+                url = 'https://inksoftware.house/'
 
                 scm {
-                    connection 'scm:git:https://github.com/INK-Solutions/system-test-framework.git'
-                    developerConnection 'scm:git:https://github.com/INK-Solutions/system-test-framework.git'
-                    url 'https://github.com/INK-Solutions/system-test-framework.git'
+                    connection = 'scm:git:https://github.com/INK-Solutions/system-test-framework.git'
+                    developerConnection = 'scm:git:https://github.com/INK-Solutions/system-test-framework.git'
+                    url = 'https://github.com/INK-Solutions/system-test-framework.git'
                 }
 
                 licenses {
                     license {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                     }
                 }
 
                 developers {
                     developer {
-                        id 'Ivan Nikolaichuk'
-                        name 'Ivan Nikolaichuk'
-                        email 'hello@inksoftware.house'
+                        id = 'Ivan Nikolaichuk'
+                        name = 'Ivan Nikolaichuk'
+                        email = 'hello@inksoftware.house'
                     }
                 }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = 'ivan.inksoftware'
+                password = 'mXsYrMGXQ0CGQF7tsd5M%'
             }
         }
     }
@@ -98,8 +90,8 @@ dependencies {
     implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     implementation 'org.skyscreamer:jsonassert:1.5.1'
     implementation 'com.jayway.jsonpath:json-path:2.7.0'
-    implementation 'org.springframework:spring-test:5.3.22'
-    implementation 'org.springframework:spring-web:5.3.22'
+    implementation 'org.springframework:spring-test:6.0.11'
+    implementation 'org.springframework:spring-web:6.0.11'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4'
     implementation 'commons-io:commons-io:2.12.0'
@@ -117,7 +109,7 @@ dependencies {
     implementation 'org.testcontainers:postgresql:1.17.3'
 
     implementation 'org.testcontainers:kafka:1.17.3'
-    implementation "org.testcontainers:mockserver:1.17.6"
+    implementation 'org.testcontainers:mockserver:1.19.0'
 
     implementation 'org.awaitility:awaitility:4.2.0'
     implementation 'org.awaitility:awaitility-proxy:3.1.6'
@@ -126,7 +118,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    implementation 'org.springframework.boot:spring-boot-starter-test:2.4.0'
+    implementation 'org.springframework.boot:spring-boot-starter-test:3.1.3'
+
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 

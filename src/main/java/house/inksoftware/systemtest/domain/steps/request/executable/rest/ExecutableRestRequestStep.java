@@ -34,7 +34,7 @@ public class ExecutableRestRequestStep implements ExecutableRequestStep {
                 .getRestTemplate()
                 .exchange(fullPath, getHttpMethod(), toEntity(), String.class);
 
-        return new ActualRestResponse(response.getStatusCode(), response.getBody() == null ? "{}" : response.getBody());
+        return new ActualRestResponse(response.getStatusCode().value(), response.getBody() == null ? "{}" : response.getBody());
     }
 
     private HttpEntity<Object> toEntity() {
