@@ -30,10 +30,6 @@ artifacts {
     archives javadocJar, sourcesJar
 }
 
-signing {
-    sign configurations.archives
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -83,6 +79,10 @@ publishing {
     }
 }
 
+signing {
+    sign configurations.archives
+    sign publishing.publications.mavenJava
+}
 
 dependencies {
     implementation 'com.guicedee.services:sl4j:1.0.13.5'
