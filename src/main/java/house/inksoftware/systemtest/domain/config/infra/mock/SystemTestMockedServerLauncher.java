@@ -66,14 +66,23 @@ public class SystemTestMockedServerLauncher implements SystemTestResourceLaunche
 
     private void waitUntilEndpointsAreAvailable() {
         try {
-            Thread.sleep(5000);
             await()
                     .atMost(Duration.of(50, ChronoUnit.SECONDS))
                     .pollInterval(Duration.of(1, ChronoUnit.SECONDS))
-                    .until(() -> restTemplate.getRestTemplate().exchange(URI.create("http://localhost:1080/api/mockserver/status"), HttpMethod.GET, HttpEntity.EMPTY, String.class).getStatusCodeValue() == 200);
+                    .until(() -> running("docker") || running("localhost"));
         } catch (Exception e) {
             throw new RuntimeException("MockServer API is not available, please check if your configuration is correct");
         }
+    }
+
+    private Boolean running(String domain) {
+        String url = "http://" + domain + ":1080/api/mockserver/status";
+        try {
+            return restTemplate.getRestTemplate().exchange(URI.create(url), HttpMethod.GET, HttpEntity.EMPTY, String.class).getStatusCodeValue() == 200;
+        } catch (Exception ex) {
+            LOGGER.warn("Unable to find: {}", url);
+        }
+        return false;
     }
 
     private File addStatusVerificationEndpoint(String filePath) {
