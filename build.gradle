@@ -73,7 +73,7 @@ publishing {
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
             credentials {
                 username = 'ivan.inksoftware'
-                password = 'mXsYrMGXQ0CGQF7tsd5M%'
+                password = System.getenv('MAVEN_REPO_PASSWORD') ?: ''
             }
         }
     }
