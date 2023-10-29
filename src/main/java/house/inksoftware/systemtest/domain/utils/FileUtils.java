@@ -5,13 +5,24 @@ import com.google.common.io.Resources;
 import lombok.SneakyThrows;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class FileUtils {
+
+    public static String readJsonStringFromFile(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        byte[] bytes = Files.readAllBytes(path);
+        return new String(bytes);
+    }
+
     public static String readFileContent(final String fullPath) throws Exception {
         return Resources.toString(new File(fullPath).toURI().toURL(), StandardCharsets.UTF_8);
     }

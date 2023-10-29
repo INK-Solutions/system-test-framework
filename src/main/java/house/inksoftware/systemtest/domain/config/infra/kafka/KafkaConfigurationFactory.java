@@ -32,8 +32,7 @@ import java.util.stream.Collectors;
 public class KafkaConfigurationFactory {
     @SneakyThrows
     public static SystemTestConfiguration.KafkaConfiguration create(EmbeddedKafkaBroker embeddedKafkaBroker,
-                                                                    List<KafkaTopicDefinition> topicDefinitions,
-                                                                    KafkaEventProcessedCallback kafkaEventProcessedCallback) {
+                                                                    List<KafkaTopicDefinition> topicDefinitions) {
 
         KafkaTopicDefinitionHolder.setTopicDefinitions(topicDefinitions);
 
@@ -52,8 +51,7 @@ public class KafkaConfigurationFactory {
                 embeddedKafkaBroker,
                 appPublishTopics,
                 kafkaBackgroundConsumerService,
-                kafkaProducerService,
-                kafkaEventProcessedCallback
+                kafkaProducerService
         );
     }
 

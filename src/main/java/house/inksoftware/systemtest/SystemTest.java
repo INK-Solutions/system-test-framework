@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import house.inksoftware.systemtest.domain.SystemTestExecutionService;
 import house.inksoftware.systemtest.domain.SystemTestExecutionServiceFactory;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
+import house.inksoftware.systemtest.domain.config.infra.InfrastructureConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.InfrastructureLauncher;
 import house.inksoftware.systemtest.domain.config.infra.kafka.incoming.KafkaEventProcessedCallback;
 import house.inksoftware.systemtest.domain.context.SystemTestContext;
@@ -20,9 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.*;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -36,26 +35,23 @@ import static org.springframework.test.context.TestExecutionListeners.MergeMode.
 @Slf4j
 @TestExecutionListeners(value = {SystemTest.class}, mergeMode = MERGE_WITH_DEFAULTS)
 @ActiveProfiles("systemtest")
-@EmbeddedKafka
 @RequiredArgsConstructor
 @RunWith(SpringRunner.class)
 public class SystemTest implements TestExecutionListener {
-    private static final String PATH = "src/test/resources/";
+    public static final String TEST_RESOURCES_PATH = "src/test/resources/";
 
     @Autowired
     protected TestRestTemplate restTemplate;
 
-    @Autowired
-    private EmbeddedKafkaBroker embeddedKafkaBroker;
-
     @Autowired(required = false)
     private KafkaEventProcessedCallback kafkaEventProcessedCallback;
-    private InfrastructureLauncher infrastructureLauncher = new InfrastructureLauncher();
+    private final InfrastructureLauncher infrastructureLauncher = new InfrastructureLauncher();
+    private final InfrastructureConfiguration infrastructureConfiguration = new InfrastructureConfiguration();
 
     @LocalServerPort
     protected int port;
 
-
+    private static SystemTestConfiguration config;
 
     @Override
     public void beforeTestClass(TestContext testContext) throws Exception {
@@ -74,11 +70,12 @@ public class SystemTest implements TestExecutionListener {
 
         LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
         infrastructureLauncher.launchDb(testContext, infrastructure);
+        config = infrastructureLauncher.launchAllInfra(infrastructure);
     }
 
     @NotNull
     private static Optional<File> findSystemTestConfig() {
-        return listFiles(new File(PATH), new String[] {"json"}, true)
+        return listFiles(new File(TEST_RESOURCES_PATH), new String[] {"json"}, true)
                 .stream()
                 .filter(file -> file.getName().equals("system-test-configuration.json"))
                 .findFirst();
@@ -86,7 +83,7 @@ public class SystemTest implements TestExecutionListener {
 
     @NotNull
     private static Optional<File> findSystemTestYaml() {
-        return listFiles(new File(PATH), new String[] {"yml"}, true)
+        return listFiles(new File(TEST_RESOURCES_PATH), new String[] {"yml"}, true)
                 .stream()
                 .filter(file -> file.getName().equals("application-systemtest.yml"))
                 .findFirst();
@@ -95,19 +92,10 @@ public class SystemTest implements TestExecutionListener {
     @SneakyThrows
     @Test
     public void testBusinessLogic() {
+        infrastructureConfiguration.finishInfraConfig(config, kafkaEventProcessedCallback, restTemplate, port);
         Optional<File> systemTestConfFile = findSystemTestConfig();
         if (systemTestConfFile.isPresent()) {
             try {
-                LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
-
-                SystemTestConfiguration config = infrastructureLauncher
-                        .launchAllInfra(
-                                embeddedKafkaBroker,
-                                kafkaEventProcessedCallback,
-                                restTemplate,
-                                port,
-                                infrastructure
-                        );
                 testBusinessLogic(config, systemTestConfFile.get());
             } finally {
                 infrastructureLauncher.shutdown();
