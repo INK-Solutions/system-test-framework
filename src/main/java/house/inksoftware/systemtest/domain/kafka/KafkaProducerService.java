@@ -17,6 +17,7 @@ public class KafkaProducerService {
     private final List<KafkaTopicDefinition> topics;
 
     public void produce(String name, String json) {
+        log.info("Producing message to topic: {}", name);
         KafkaTopicDefinition kafkaTopic = topics
                 .stream()
                 .filter(topic -> topic.getName().equals(name))
@@ -24,5 +25,7 @@ public class KafkaProducerService {
                 .orElseThrow(() -> new IllegalStateException("Topic with label " + name + " not found"));
 
         producer.send(new ProducerRecord<>(kafkaTopic.getName(), "key", serializer.toSpecificRecord(kafkaTopic.getName(), json)));
+
+        log.info("Produced message to topic: {}", name);
     }
 }

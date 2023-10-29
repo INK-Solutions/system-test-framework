@@ -14,6 +14,7 @@ import java.util.List;
 public class SystemTestConfiguration {
     private RestConfiguration restConfiguration;
     private KafkaConfiguration kafkaConfiguration;
+    private GrpcConfiguration grpcConfiguration;
 
     @Data
     public static class KafkaTopic {
@@ -27,7 +28,7 @@ public class SystemTestConfiguration {
         private final List<KafkaTopicDefinition> kafkaTopics;
         private final KafkaBackgroundConsumerService kafkaBackgroundConsumerService;
         private final KafkaProducerService kafkaProducerService;
-        private final KafkaEventProcessedCallback kafkaEventProcessedCallback;
+        private KafkaEventProcessedCallback kafkaEventProcessedCallback;
     }
 
 
@@ -36,5 +37,20 @@ public class SystemTestConfiguration {
         private final String host;
         private final TestRestTemplate restTemplate;
         private final Integer port;
+    }
+
+
+    @Data
+    public static class GrpcConfiguration {
+        private final String protoDirPath;
+        private final String contractsDirPath;
+    }
+
+    public boolean hasKafka() {
+        return kafkaConfiguration != null;
+    }
+
+    public boolean hasGrpc() {
+        return grpcConfiguration != null;
     }
 }
