@@ -30,13 +30,18 @@ public class InfrastructureLauncher {
     private final List<SystemTestResourceLauncher> resources = new ArrayList<>();
 
     public void launchDb(TestContext testContext, LinkedHashMap<String, Object> config) {
-        LinkedHashMap<String, String> properties = (LinkedHashMap) config.get("database");
-        launchDatabase(properties.get("type"), properties.get("image"));
+        var databases = (JSONArray) config.get("databases");
+        for (Object database : databases) {
+            var dbConfig = (LinkedHashMap<String, String>) database;
+            launchDatabase(dbConfig.get("type"), dbConfig.get("image"));
 
-        String testDataScriptsPath = properties.get("testDataScriptsPath");
-        if (testDataScriptsPath != null && testContext != null) {
-            new SystemTestDatabasePopulatorLauncher(testDataScriptsPath, testContext.getApplicationContext().getBean(DataSource.class)).setup();
+            String testDataScriptsPath = dbConfig.get("testDataScriptsPath");
+            if (testDataScriptsPath != null && testContext != null) {
+                new SystemTestDatabasePopulatorLauncher(testDataScriptsPath, testContext.getApplicationContext()
+                                                                                        .getBean(DataSource.class)).setup();
+            }
         }
+
     }
 
     public SystemTestConfiguration launchAllInfra(LinkedHashMap<String, Object> config) {
