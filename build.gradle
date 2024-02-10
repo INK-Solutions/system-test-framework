@@ -106,6 +106,7 @@ dependencies {
 
     implementation 'org.testcontainers:mssqlserver:1.17.6'
     implementation 'org.testcontainers:postgresql:1.17.6'
+    implementation 'org.testcontainers:mysql:1.17.6'
 
     implementation 'org.testcontainers:kafka:1.17.6'
     implementation 'org.testcontainers:mockserver:1.17.6'
