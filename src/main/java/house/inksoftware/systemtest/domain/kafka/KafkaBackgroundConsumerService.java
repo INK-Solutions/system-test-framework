@@ -29,7 +29,7 @@ public class KafkaBackgroundConsumerService {
         executor.execute(() -> {
             while (true) {
                 try {
-                    ConsumerRecords<String, Object> records = KafkaTestUtils.getRecords(consumer, 1000);
+                    ConsumerRecords<String, Object> records = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(1));
                     records
                             .forEach(record -> {
                                 log.info("Read record {} from topic {}", record.value().toString(), record.topic());
