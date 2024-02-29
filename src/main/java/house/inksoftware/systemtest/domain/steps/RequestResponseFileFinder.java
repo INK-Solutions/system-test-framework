@@ -20,6 +20,7 @@ public class RequestResponseFileFinder {
                                     .filter(entry -> entry.getName().equals(name))
                                     .map(File::listFiles)
                                     .flatMap(Arrays::stream)
+                                    .filter(File::isFile)
                                     .collect(Collectors.toList());
         Preconditions.checkState(requests.size() == 1, "There's more than one request file under folder " + folder.getParent());
 
