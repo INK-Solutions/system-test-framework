@@ -54,9 +54,10 @@ public class ExecutableRestRequestStepFactory {
     private static FormData toFormData(DocumentContext documentContext, String basePath, String stepName) {
         if (JsonUtils.hasPath(documentContext, "form")) {
             List<FormData.FormParam> formParams = new ArrayList<>();
-            LinkedHashMap<String, String> params = (LinkedHashMap<String, String>) ((JSONArray) documentContext.read("form.params")).get(0);
-            params.forEach((key, value) -> formParams.add(new FormData.FormParam(key, value)));
-
+            if (JsonUtils.hasPath(documentContext, "form.params")) {
+                LinkedHashMap<String, String> params = (LinkedHashMap<String, String>) ((JSONArray) documentContext.read("form.params")).get(0);
+                params.forEach((key, value) -> formParams.add(new FormData.FormParam(key, value)));
+            }
             return new FormData(toAttachment(documentContext, basePath, stepName), formParams);
         } else {
             return null;

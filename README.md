@@ -7,7 +7,8 @@
 The System Test Framework is our custom a Java-based testing framework.
 It is business oriented test framework that allows you to define steps that are part of a business processes, and then make sure business process are executed.
 
-The main features:
+The main features
+ :
 
 1. Launch all the infrastructure that your application needs (postgres db, kafka, mocked server)
 2. Launch your application as a spring boot application connected to the infrastructure from step 1.
