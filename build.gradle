@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'house.inksoftware'
-version 'java-21-0.0.2'
+version 'java-21-0.0.4'
 sourceCompatibility = '21'
 
 repositories {
@@ -78,10 +78,6 @@ publishing {
     }
 }
 
-signing {
-    sign configurations.archives
-    sign publishing.publications.mavenJava
-}
 
 dependencies {
     implementation 'com.guicedee.services:sl4j:1.0.13.5'
