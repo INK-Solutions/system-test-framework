@@ -44,11 +44,10 @@ public class ExecutableRestRequestStep implements ExecutableRequestStep {
         if (hasFormData()) {
             LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
 
-            if (formData.getAttachment() != null) {
-                parameters.add(
-                        formData.getAttachment().getParamName(),
-                        new ClassPathResource(formData.getAttachment().getFilePath())
-                );
+            if (formData.getAttachments() != null) {
+                formData.getAttachments()
+                        .forEach(entry -> parameters.add(entry.getParamName(), new ClassPathResource(entry.getFilePath())));
+;
             }
 
             formData.getParams().forEach(param -> parameters.add(param.getKey(), param.getValue()));
@@ -66,7 +65,7 @@ public class ExecutableRestRequestStep implements ExecutableRequestStep {
 
     @Data
     public static class FormData {
-        private final Attachment attachment;
+        private final List<Attachment> attachments;
         private final List<FormParam> params;
 
         @Data

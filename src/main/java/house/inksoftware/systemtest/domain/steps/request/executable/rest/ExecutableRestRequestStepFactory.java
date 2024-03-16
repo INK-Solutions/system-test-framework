@@ -59,21 +59,28 @@ public class ExecutableRestRequestStepFactory {
                 params.forEach((key, value) -> formParams.add(new FormData.FormParam(key, value)));
             }
             return new FormData(toAttachment(documentContext, basePath, stepName), formParams);
+
         } else {
             return null;
         }
     }
 
-    private static Attachment toAttachment(DocumentContext documentContext, String basePath, String stepName) {
-        if (JsonUtils.hasPath(documentContext, "form.attachment")) {
-            Object attachment = documentContext.read("form.attachment");
-            String paramName = JsonPath.parse(attachment).read("name");
-            String attachmentFileName = JsonPath.parse(attachment).read("file");
-            String fullPath = basePath + stepName + "/request/attachment/" + attachmentFileName;
+    private static List<Attachment> toAttachments(DocumentContext documentContext, String basePath, String stepName) {
+        List<Attachment> result = new ArrayList<>();
 
-            return new Attachment(paramName, fullPath);
-        } else {
-            return null;
+        if (JsonUtils.hasPath(documentContext, "form.attachments")) {
+            List<Object> attachments = documentContext.read("form.attachments");
+
+            for (Object attachmentObj : attachments) {
+                String paramName = JsonPath.parse(attachmentObj).read("name");
+                String attachmentFileName = JsonPath.parse(attachmentObj).read("file");
+                var relativeBasePath = basePath.substring(basePath.indexOf("systemtests"));
+                String fullPath = relativeBasePath + "/" + stepName + "/request/attachment/" + attachmentFileName;
+
+                result.add(new Attachment(paramName, fullPath));
+            }
         }
+
+        return result;
     }
 }
