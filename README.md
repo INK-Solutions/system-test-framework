@@ -9,7 +9,6 @@ It is business oriented test framework that allows you to define steps that are 
 
 The main features
  :
-
 1. Launch all the infrastructure that your application needs (postgres db, kafka, mocked server)
 2. Launch your application as a spring boot application connected to the infrastructure from step 1.
 3. Execute step-by-step requests to your application via publicly exposed interfaces (rest and kafka), checking the correctness of the result.
