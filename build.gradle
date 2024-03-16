@@ -95,7 +95,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
     implementation 'commons-io:commons-io:2.12.0'
 
-    implementation 'org.apache.kafka:kafka-clients:3.4.0'
+    implementation 'org.apache.kafka:kafka-clients:3.6.0'
     implementation 'tech.allegro.schema.json2avro:converter:0.2.15'
     implementation "io.confluent:kafka-streams-avro-serde:7.2.1"
     implementation 'org.apache.avro:avro:1.11.1'
