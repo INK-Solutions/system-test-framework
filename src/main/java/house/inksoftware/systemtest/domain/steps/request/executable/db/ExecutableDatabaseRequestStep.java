@@ -9,41 +9,43 @@ import lombok.Data;
 import lombok.SneakyThrows;
 
 import java.sql.*;
+import java.util.Optional;
 
 @Builder
 @Data
 public class ExecutableDatabaseRequestStep implements ExecutableRequestStep {
     private final String query;
-    private final String contextVariableName;
+    private final Optional<String> contextVariableName;
     private final SystemTestContext context;
 
     public ActualResponse execute(SystemTestConfiguration config) {
-        makedDbCall();
+        makeDbCall();
         return null;
     }
 
     @SneakyThrows
-    private void makedDbCall() {
+    private void makeDbCall() {
         try (Connection connection = getConnection()) {
             CallableStatement query = connection.prepareCall(this.query);
             query.execute();
-            try (ResultSet resultSet = query.getResultSet()) {
-                resultSet.next();
-                context.put(contextVariableName, resultSet.getString(1));
+            if (contextVariableName.isPresent()) {
+                try (ResultSet resultSet = query.getResultSet()) {
+                    resultSet.next();
+                    context.put(contextVariableName.get(), resultSet.getString(1));
+                }
             }
         }
 
     }
 
     private static Connection getConnection() {
-        Connection con = null;
+        Connection result = null;
         try {
-            // create the connection now
-            con = DriverManager.getConnection(System.getProperty("DB_URL"), System.getProperty("DB_USERNAME"), System.getProperty("DB_PASSWORD"));
+            result = DriverManager.getConnection(System.getProperty("DB_URL"), System.getProperty("DB_USERNAME"), System.getProperty("DB_PASSWORD"));
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return con;
+        return result;
     }
 
 }
