@@ -5,9 +5,11 @@ plugins {
 }
 
 group 'house.inksoftware'
-version 'java-21-0.0.5'
-sourceCompatibility = '21'
+version 'java-21-0.0.6'
 
+java {
+    sourceCompatibility = '21'
+}
 repositories {
     mavenCentral()
 

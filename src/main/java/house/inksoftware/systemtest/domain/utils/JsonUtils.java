@@ -25,11 +25,12 @@ public class JsonUtils {
             JSONAssert.assertEquals(new JSONObject(expected), new JSONObject(actual), false);
         }
     }
+
     public static boolean isEqual(String expected, String actual) {
         try {
             assertJsonEquals(expected, actual);
             return true;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -60,25 +61,25 @@ public class JsonUtils {
     }
 
 
-            public static class FailOnMissingKeyMap extends HashMap<String, Object> {
-                @Override
-                public boolean containsKey(Object key) {
-                    if (!super.containsKey(key)) {
-                        missingKey(key);
-                    }
-                    return super.containsKey(key);
-                }
-
-                @Override
-                public Object get(Object key) {
-                    if (!super.containsKey(key)) {
-                        missingKey(key);
-                    }
-                    return super.get(key);
-                }
-
-                private void missingKey(Object key) {
-                    throw new IllegalStateException("Missing required placeholder: " + key +". Make sure you store it in callback context for one of previous calls. More info: https://github.com/INK-Solutions/system-test-framework#callbacks");
-                }
+    public static class FailOnMissingKeyMap extends HashMap<String, Object> {
+        @Override
+        public boolean containsKey(Object key) {
+            if (!super.containsKey(key)) {
+                missingKey(key);
             }
+            return super.containsKey(key);
+        }
+
+        @Override
+        public Object get(Object key) {
+            if (!super.containsKey(key)) {
+                missingKey(key);
+            }
+            return super.get(key);
+        }
+
+        private void missingKey(Object key) {
+            throw new IllegalStateException("Missing required placeholder: " + key + ". Make sure you store it in callback context for one of previous calls. More info: https://github.com/INK-Solutions/system-test-framework#callbacks");
+        }
+    }
 }
