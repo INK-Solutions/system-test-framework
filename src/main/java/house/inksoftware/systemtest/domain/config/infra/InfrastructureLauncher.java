@@ -5,7 +5,6 @@ import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.GrpcConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.db.SystemTestDatabasePopulatorLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.mssql.SystemTestMsSqlLauncher;
-import house.inksoftware.systemtest.domain.config.infra.db.mysql.SystemTestMySqlLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.postgres.SystemTestPostgresLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.redis.SystemTestRedisLauncher;
 import house.inksoftware.systemtest.domain.config.infra.kafka.KafkaConfigurationFactory;
@@ -79,8 +78,6 @@ public class InfrastructureLauncher {
             resourceLauncher = new SystemTestPostgresLauncher(image);
         } else if (type.startsWith("mssql")) {
             resourceLauncher = new SystemTestMsSqlLauncher(image);
-        } else if (type.startsWith("mysql")) {
-            resourceLauncher = new SystemTestMySqlLauncher(image);
         } else if (type.startsWith("redis")) {
             resourceLauncher = new SystemTestRedisLauncher(image);
         } else {
