@@ -5,10 +5,10 @@ plugins {
 }
 
 group 'house.inksoftware'
-version 'java-21-0.0.6'
+version 'java-17-0.0.1'
 
 java {
-    sourceCompatibility = '21'
+    sourceCompatibility = '17'
 }
 repositories {
     mavenCentral()
@@ -80,10 +80,10 @@ publishing {
     }
 }
 
-signing {
-    sign configurations.archives
-    sign publishing.publications.mavenJava
-}
+//signing {
+//    sign configurations.archives
+//    sign publishing.publications.mavenJava
+//}
 
 dependencies {
     implementation 'com.guicedee.services:sl4j:1.0.13.5'
@@ -109,6 +109,7 @@ dependencies {
     implementation 'org.testcontainers:mssqlserver:1.17.6'
     implementation 'org.testcontainers:postgresql:1.17.6'
     implementation 'org.testcontainers:mysql:1.17.6'
+    implementation 'org.opensearch:opensearch-testcontainers:2.0.1'
 
     implementation 'org.testcontainers:kafka:1.17.6'
     implementation 'org.testcontainers:mockserver:1.17.6'

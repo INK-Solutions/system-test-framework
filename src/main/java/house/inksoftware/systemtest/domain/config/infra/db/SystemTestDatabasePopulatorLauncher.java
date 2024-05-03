@@ -48,7 +48,7 @@ public class SystemTestDatabasePopulatorLauncher implements SystemTestResourceLa
                 String sql = toSql(folder, sqlFilePath);
 
                 log.info("Executing sql {} start...", sqlFilePath);
-                dataSource.getConnection().prepareCall(sql).execute();
+                dataSource.getConnection().prepareCall(sql).executeUpdate();
                 log.info("Executing sql {} done.", sqlFilePath);
             }
             populated = true;

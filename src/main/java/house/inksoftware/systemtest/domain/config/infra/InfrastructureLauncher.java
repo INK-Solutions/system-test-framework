@@ -12,6 +12,7 @@ import house.inksoftware.systemtest.domain.config.infra.kafka.KafkaConfiguration
 import house.inksoftware.systemtest.domain.config.infra.kafka.SystemTestKafkaLauncher;
 import house.inksoftware.systemtest.domain.config.infra.mock.SystemTestMockedGrpcServerLauncher;
 import house.inksoftware.systemtest.domain.config.infra.mock.SystemTestMockedRestServerLauncher;
+import house.inksoftware.systemtest.domain.config.infra.opensearch.SystemTestOpenSearchLauncher;
 import house.inksoftware.systemtest.domain.kafka.topic.KafkaTopicDefinition;
 import net.minidev.json.JSONArray;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
@@ -55,6 +56,9 @@ public class InfrastructureLauncher {
             } else if (key.equals("mockedServer")) {
                 String path = (String) ((LinkedHashMap) value).get("path");
                 launchMockedServer(path);
+            } else if (key.equals("openSearch")) {
+                String image = (String) ((LinkedHashMap) value).get("image");
+                launchOpenSearch(image);
             } else if (key.equals("grpc")) {
                 String protoDirPath = (String) ((LinkedHashMap) value).get("protoDirPath");
                 Preconditions.checkState(protoDirPath != null, "Proto dir path is not defined for grpc");
@@ -98,6 +102,11 @@ public class InfrastructureLauncher {
         mockedServerLauncher.setup();
     }
 
+    private void launchOpenSearch(String path) {
+        SystemTestOpenSearchLauncher openSearchLauncher = new SystemTestOpenSearchLauncher(path);
+        resources.add(openSearchLauncher);
+        openSearchLauncher.setup();
+    }
 
     private void launchGrpcServer(String protoDirPath) {
         SystemTestMockedGrpcServerLauncher mockedServerLauncher = new SystemTestMockedGrpcServerLauncher(protoDirPath);

@@ -69,8 +69,8 @@ public class SystemTest implements TestExecutionListener {
         );
 
         LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
-        infrastructureLauncher.launchDb(testContext, infrastructure);
         config = infrastructureLauncher.launchAllInfra(infrastructure);
+        infrastructureLauncher.launchDb(testContext, infrastructure);
     }
 
     @NotNull
