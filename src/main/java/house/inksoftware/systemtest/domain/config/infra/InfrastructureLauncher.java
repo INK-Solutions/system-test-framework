@@ -3,6 +3,8 @@ package house.inksoftware.systemtest.domain.config.infra;
 import com.google.common.base.Preconditions;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.GrpcConfiguration;
+import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.KafkaConfiguration;
+import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.SqsConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.db.SystemTestDatabasePopulatorLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.mssql.SystemTestMsSqlLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.mysql.SystemTestMySqlLauncher;
@@ -12,10 +14,15 @@ import house.inksoftware.systemtest.domain.config.infra.kafka.KafkaConfiguration
 import house.inksoftware.systemtest.domain.config.infra.kafka.SystemTestKafkaLauncher;
 import house.inksoftware.systemtest.domain.config.infra.mock.SystemTestMockedGrpcServerLauncher;
 import house.inksoftware.systemtest.domain.config.infra.mock.SystemTestMockedRestServerLauncher;
+import house.inksoftware.systemtest.domain.config.infra.sqs.SqsConfigurationFactory;
+import house.inksoftware.systemtest.domain.config.infra.sqs.SystemTestSqsLauncher;
 import house.inksoftware.systemtest.domain.kafka.topic.KafkaTopicDefinition;
+import house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition;
+import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.context.TestContext;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -26,7 +33,7 @@ import java.util.stream.Collectors;
 
 import static house.inksoftware.systemtest.SystemTest.TEST_RESOURCES_PATH;
 
-
+@Slf4j
 public class InfrastructureLauncher {
     private final List<SystemTestResourceLauncher> resources = new ArrayList<>();
 
@@ -52,6 +59,10 @@ public class InfrastructureLauncher {
                 var kafkaBroker = embeddedKafkaBroker();
                 var topics = configureKafka(kafkaBroker, ((JSONArray) ((LinkedHashMap) value).get("topics")));
                 result.setKafkaConfiguration(topics);
+            } else if (key.equals("sqs")) {
+                var sqsClient = embeddedSqsClient();
+                var configuration = configureSqs(sqsClient, (JSONArray) ((LinkedHashMap) value).get("queues"));
+                result.setSqsConfiguration(configuration);
             } else if (key.equals("mockedServer")) {
                 String path = (String) ((LinkedHashMap) value).get("path");
                 launchMockedServer(path);
@@ -64,7 +75,6 @@ public class InfrastructureLauncher {
                 result.setGrpcConfiguration(new GrpcConfiguration(protoDirPath, TEST_RESOURCES_PATH + contractsDirPath));
             }
         });
-
         return result;
     }
 
@@ -105,7 +115,7 @@ public class InfrastructureLauncher {
         mockedServerLauncher.setup();
     }
 
-    private SystemTestConfiguration.KafkaConfiguration configureKafka(EmbeddedKafkaBroker kafkaBroker, JSONArray topics) {
+    private KafkaConfiguration configureKafka(EmbeddedKafkaBroker kafkaBroker, JSONArray topics) {
         List<KafkaTopicDefinition> topicDefinitions = topics
                 .stream()
                 .map(entry -> KafkaTopicDefinition.create((Map<String, String>) entry))
@@ -117,10 +127,28 @@ public class InfrastructureLauncher {
         );
     }
 
+    private SqsConfiguration configureSqs(SqsClient sqsClient, JSONArray queues) {
+        List<SqsQueueDefinition> queueDefinitions = queues
+                .stream()
+                .map(entry -> SqsQueueDefinition.create((Map<String, String>) entry))
+                .toList();
+        return SqsConfigurationFactory.create(
+                sqsClient,
+                queueDefinitions
+        );
+    }
+
     private EmbeddedKafkaBroker embeddedKafkaBroker() {
         var kafkaLauncher = new SystemTestKafkaLauncher();
         resources.add(kafkaLauncher);
         kafkaLauncher.setup();
         return kafkaLauncher.getEmbeddedKafka();
+    }
+
+    private SqsClient embeddedSqsClient() {
+        var sqsLauncher = new SystemTestSqsLauncher();
+        resources.add(sqsLauncher);
+        sqsLauncher.setup();
+        return sqsLauncher.getSqsClient();
     }
 }

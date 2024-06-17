@@ -4,9 +4,12 @@ import house.inksoftware.systemtest.domain.config.infra.kafka.incoming.KafkaEven
 import house.inksoftware.systemtest.domain.kafka.KafkaBackgroundConsumerService;
 import house.inksoftware.systemtest.domain.kafka.KafkaProducerService;
 import house.inksoftware.systemtest.domain.kafka.topic.KafkaTopicDefinition;
+import house.inksoftware.systemtest.domain.sqs.SqsProducerService;
+import house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition;
 import lombok.Data;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 import java.util.List;
 
@@ -15,6 +18,14 @@ public class SystemTestConfiguration {
     private RestConfiguration restConfiguration;
     private KafkaConfiguration kafkaConfiguration;
     private GrpcConfiguration grpcConfiguration;
+    private SqsConfiguration sqsConfiguration;
+
+    @Data
+    public static class SqsConfiguration {
+        private final SqsClient sqsClient;
+        private final List<SqsQueueDefinition> sqsQueues;
+        private final SqsProducerService sqsProducerService;
+    }
 
     @Data
     public static class KafkaTopic {

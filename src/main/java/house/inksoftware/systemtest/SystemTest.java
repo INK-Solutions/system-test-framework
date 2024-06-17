@@ -22,7 +22,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.*;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestContext;
+import org.springframework.test.context.TestExecutionListener;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -67,7 +70,6 @@ public class SystemTest implements TestExecutionListener {
                 "File system-test-configuration.json is not found! Please add it and define your infra requirements.",
                 systemTestConfFile.isPresent()
         );
-
         LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
         infrastructureLauncher.launchDb(testContext, infrastructure);
         config = infrastructureLauncher.launchAllInfra(infrastructure);
