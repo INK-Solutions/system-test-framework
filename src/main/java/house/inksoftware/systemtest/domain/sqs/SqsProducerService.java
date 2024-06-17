@@ -34,8 +34,8 @@ public class SqsProducerService {
                 .messageGroupId(UUID.randomUUID().toString())
                 .messageDeduplicationId(UUID.randomUUID().toString())
                 .build();
-        sqsClient.sendMessage(sendMessageRequest);
-        log.info("Produced message: {}, to queue: {}", message, name);
+        var response = sqsClient.sendMessage(sendMessageRequest);
+        log.info("Produced message: {} to queue: {}, url: {}", message, fullQueueName, queueUrl);
     }
 
     private String findUrl(String queueName) {

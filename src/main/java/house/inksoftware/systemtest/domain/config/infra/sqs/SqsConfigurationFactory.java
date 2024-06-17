@@ -12,9 +12,15 @@ public class SqsConfigurationFactory {
 
     public static SqsConfiguration create(SqsClient sqsClient,
                                           List<SqsQueueDefinition> queueDefinitions) {
+
         createQueues(sqsClient, queueDefinitions);
         SqsProducerService sqsProducerService = new SqsProducerService(sqsClient, queueDefinitions);
-        return new SqsConfiguration(sqsClient, queueDefinitions, sqsProducerService);
+
+        return new SqsConfiguration(
+                sqsClient,
+                queueDefinitions,
+                sqsProducerService
+        );
     }
 
     public static void createQueues(SqsClient sqsClient, List<SqsQueueDefinition> queueDefinitions) {

@@ -25,7 +25,7 @@ public class ExecutableRequestStepFactory {
         } else if (requestFile.getName().equals("db-request.json")) {
             return ExecutableDatabaseRequestStepFactory.create(requestStep, context);
         } else {
-            throw new IllegalArgumentException("Unknown step file name: " + requestFile.getName() + ". Allowed requests names are: rest-request.json, kafka-request.json, sqs-request.json, db-request.json");
+            throw new IllegalArgumentException("Unknown step file name: " + requestFile.getName() + ". Allowed requests names are: rest-request.json, kafka-request.json, db-request.json");
         }
     }
 }
