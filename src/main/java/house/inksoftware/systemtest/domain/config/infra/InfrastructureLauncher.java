@@ -79,14 +79,6 @@ public class InfrastructureLauncher {
         return result;
     }
 
-    public void shutdown() {
-        log.info("Entering shutdown method");
-        resources.forEach(r -> {
-            log.info("Shutting down {}", r);
-            r.shutdown();
-        });
-    }
-
     private void launchDatabase(String type, String image) {
         SystemTestResourceLauncher resourceLauncher;
 
