@@ -109,7 +109,6 @@ dependencies {
     implementation group: 'cloud.localstack', name: 'localstack-utils', version: '0.2.23'
     implementation 'software.amazon.awssdk:sqs:2.17.98'
 
-
     implementation 'org.testcontainers:mssqlserver:1.17.6'
     implementation 'org.testcontainers:postgresql:1.17.6'
     implementation 'org.testcontainers:mysql:1.17.6'
