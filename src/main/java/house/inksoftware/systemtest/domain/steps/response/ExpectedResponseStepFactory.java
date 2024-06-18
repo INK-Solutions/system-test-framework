@@ -39,11 +39,11 @@ public class ExpectedResponseStepFactory {
         String json = FileUtils.readFileContent(fullPath);
         if (fullPath.endsWith("rest-response.json")) {
             return ExpectedRestResponseStep.from(json);
-        } else if (fullPath.endsWith("event.json")) {
+        } else if (fullPath.endsWith("kafka-event.json")) {
             return ExpectedKafkaResponseStep.from(json, systemTestConfiguration.getKafkaConfiguration());
         } else if (fullPath.endsWith("kafka-request-processed.json")) {
             return ExpectedKafkaRequestProcessedStep.from(json, systemTestConfiguration.getKafkaConfiguration());
-        } else if (fullPath.endsWith("sqs-response.json")) {
+        } else if (fullPath.endsWith("sqs-event.json")) {
             return ExpectedSqsResponseStep.from(json, systemTestConfiguration.getSqsConfiguration());
         } else {
             throw new IllegalArgumentException("Expected response file should be named: event.json or rest-response.json");
