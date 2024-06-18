@@ -34,7 +34,7 @@ public class SqsProducerService {
                 .messageGroupId(UUID.randomUUID().toString())
                 .messageDeduplicationId(UUID.randomUUID().toString())
                 .build();
-        var response = sqsClient.sendMessage(sendMessageRequest);
+        sqsClient.sendMessage(sendMessageRequest);
         log.info("Produced message: {} to queue: {}, url: {}", message, fullQueueName, queueUrl);
     }
 

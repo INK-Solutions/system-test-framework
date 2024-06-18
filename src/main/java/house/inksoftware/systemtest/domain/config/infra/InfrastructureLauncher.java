@@ -75,11 +75,16 @@ public class InfrastructureLauncher {
                 result.setGrpcConfiguration(new GrpcConfiguration(protoDirPath, TEST_RESOURCES_PATH + contractsDirPath));
             }
         });
+        result.setResources(resources);
         return result;
     }
 
     public void shutdown() {
-        resources.forEach(SystemTestResourceLauncher::shutdown);
+        log.info("Entering shutdown method");
+        resources.forEach(r -> {
+            log.info("Shutting down {}", r);
+            r.shutdown();
+        });
     }
 
     private void launchDatabase(String type, String image) {

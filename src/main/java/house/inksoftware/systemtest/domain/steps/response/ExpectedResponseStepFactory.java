@@ -4,6 +4,7 @@ import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.steps.response.kafka.ExpectedKafkaRequestProcessedStep;
 import house.inksoftware.systemtest.domain.steps.response.kafka.ExpectedKafkaResponseStep;
 import house.inksoftware.systemtest.domain.steps.response.rest.ExpectedRestResponseStep;
+import house.inksoftware.systemtest.domain.steps.response.sqs.ExpectedSqsResponseStep;
 import house.inksoftware.systemtest.domain.utils.FileUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -40,8 +41,10 @@ public class ExpectedResponseStepFactory {
             return ExpectedRestResponseStep.from(json);
         } else if (fullPath.endsWith("event.json")) {
             return ExpectedKafkaResponseStep.from(json, systemTestConfiguration.getKafkaConfiguration());
-        }else if (fullPath.endsWith("kafka-request-processed.json")) {
+        } else if (fullPath.endsWith("kafka-request-processed.json")) {
             return ExpectedKafkaRequestProcessedStep.from(json, systemTestConfiguration.getKafkaConfiguration());
+        } else if (fullPath.endsWith("sqs-response.json")) {
+            return ExpectedSqsResponseStep.from(json, systemTestConfiguration.getSqsConfiguration());
         } else {
             throw new IllegalArgumentException("Expected response file should be named: event.json or rest-response.json");
         }

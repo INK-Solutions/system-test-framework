@@ -14,7 +14,7 @@ public class ExecutableSqsRequestStepFactory {
         DocumentContext documentContext = JsonPath.parse(json);
 
         String queueLabel = documentContext.read("queue");
-        String body = documentContext.read("body");
+        String body = JsonPath.parse((Object) documentContext.read("body")).jsonString();
         return new ExecutableSqsRequestStep(queueLabel, body);
     }
 }

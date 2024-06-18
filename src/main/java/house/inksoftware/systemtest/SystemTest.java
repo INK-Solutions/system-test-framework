@@ -7,6 +7,7 @@ import house.inksoftware.systemtest.domain.SystemTestExecutionServiceFactory;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.InfrastructureConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.InfrastructureLauncher;
+import house.inksoftware.systemtest.domain.config.infra.SystemTestResourceLauncher;
 import house.inksoftware.systemtest.domain.config.infra.kafka.incoming.KafkaEventProcessedCallback;
 import house.inksoftware.systemtest.domain.context.SystemTestContext;
 import house.inksoftware.systemtest.domain.steps.request.RequestStep;
@@ -17,6 +18,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,10 +102,14 @@ public class SystemTest implements TestExecutionListener {
             try {
                 testBusinessLogic(config, systemTestConfFile.get());
             } finally {
-                infrastructureLauncher.shutdown();
+                shutdownInfrastructure();
             }
         }
 
+    }
+
+    private static void shutdownInfrastructure() {
+        config.getResources().forEach(SystemTestResourceLauncher::shutdown);
     }
 
     private static LinkedHashMap<String, Object> findInfraConfig(File systemTestConfFile) throws Exception {

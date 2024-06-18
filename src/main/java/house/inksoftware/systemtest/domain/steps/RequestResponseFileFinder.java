@@ -22,7 +22,7 @@ public class RequestResponseFileFinder {
                                     .flatMap(Arrays::stream)
                                     .filter(File::isFile)
                                     .collect(Collectors.toList());
-        Preconditions.checkState(requests.size() == 1, "There's more than one request file under folder " + folder.getParent());
+        Preconditions.checkState(requests.size() == 1, "There must be one request file under folder " + folder.getParent());
 
         return requests.get(0);
     }
