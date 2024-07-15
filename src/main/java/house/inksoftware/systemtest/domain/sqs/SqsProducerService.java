@@ -11,6 +11,9 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import java.util.List;
 import java.util.UUID;
 
+import static house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition.Type.FIFO;
+import static house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition.Type.STANDARD;
+
 @Slf4j
 @RequiredArgsConstructor
 public class SqsProducerService {
@@ -25,17 +28,35 @@ public class SqsProducerService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Queue " + name + " not found"));
 
-        var fullQueueName = sqsQueueDefinition.getName() + "." + sqsQueueDefinition.getType().getShortName();
+        var fullQueueName = toQueueName(sqsQueueDefinition);
         var queueUrl = findUrl(fullQueueName);
 
-        var sendMessageRequest = SendMessageRequest.builder()
-                .queueUrl(queueUrl)
-                .messageBody(message)
-                .messageGroupId(UUID.randomUUID().toString())
-                .messageDeduplicationId(UUID.randomUUID().toString())
-                .build();
+        var sendMessageRequest = buildRequestFor(sqsQueueDefinition, queueUrl, message);
         sqsClient.sendMessage(sendMessageRequest);
         log.info("Produced message: {} to queue: {}, url: {}", message, fullQueueName, queueUrl);
+    }
+
+    private SendMessageRequest buildRequestFor(SqsQueueDefinition sqsQueueDefinition, String queueUrl, String message) {
+        var builder = SendMessageRequest.builder()
+                .queueUrl(queueUrl)
+                .messageBody(message);
+
+        if (sqsQueueDefinition.getType().equals(FIFO)) {
+            builder.messageGroupId(UUID.randomUUID().toString())
+                    .messageDeduplicationId(UUID.randomUUID().toString());
+        } else if (!sqsQueueDefinition.getType().equals(STANDARD)) {
+            throw new IllegalArgumentException("Unknown queue type: " + sqsQueueDefinition.getType());
+        }
+
+        return builder.build();
+    }
+
+    private String toQueueName(SqsQueueDefinition sqsQueueDefinition) {
+        return switch (sqsQueueDefinition.getType()) {
+            case FIFO -> sqsQueueDefinition.getName() + ".fifo";
+            case STANDARD -> sqsQueueDefinition.getName();
+            default -> throw new IllegalArgumentException("Unknown queue type: " + sqsQueueDefinition.getType());
+        };
     }
 
     private String findUrl(String queueName) {

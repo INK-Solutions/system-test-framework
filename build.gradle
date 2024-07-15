@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'house.inksoftware'
-version 'java-21-0.0.9'
+version 'java-21-0.1.0'
 
 java {
     sourceCompatibility = '21'

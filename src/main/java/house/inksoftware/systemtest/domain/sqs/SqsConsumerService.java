@@ -23,7 +23,7 @@ public class SqsConsumerService {
 
     public void find(String queueName, String body) {
         var definition = findDefinition(queueName);
-        var fullQueueName = definition.getName() + "." + definition.getType().getShortName();
+        var fullQueueName = toQueueName(definition);
         var url = findUrl(fullQueueName);
         var messages = poll(url);
         var result = messages.stream()
@@ -39,6 +39,14 @@ public class SqsConsumerService {
                 .filter(queue -> queue.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Queue " + name + " not found"));
+    }
+
+    private String toQueueName(SqsQueueDefinition sqsQueueDefinition) {
+        return switch (sqsQueueDefinition.getType()) {
+            case FIFO -> sqsQueueDefinition.getName() + ".fifo";
+            case STANDARD -> sqsQueueDefinition.getName();
+            default -> throw new IllegalArgumentException("Unknown queue type: " + sqsQueueDefinition.getType());
+        };
     }
 
     private List<Message> poll(String queueUrl) {

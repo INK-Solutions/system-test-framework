@@ -17,16 +17,16 @@ public class SqsQueueDefinition {
 
     @SneakyThrows
     public static SqsQueueDefinition create(Map<String, String> data) {
-        return new SqsQueueDefinition(
-                data.get("name"),
-                Type.fromShortName(data.get("type"))
-        );
+        var type = Type.fromShortName(data.get("type"));
+        var name = data.get("name");
+        return new SqsQueueDefinition(name, type);
     }
 
     @Getter
     @RequiredArgsConstructor
     public enum Type {
-        FIFO("fifo");
+        FIFO("fifo"),
+        STANDARD("standard");
 
         private final String shortName;
 
