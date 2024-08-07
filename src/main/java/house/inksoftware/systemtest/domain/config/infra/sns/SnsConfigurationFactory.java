@@ -59,7 +59,7 @@ public class SnsConfigurationFactory {
     }
 
     private static SqsQueueDefinition subscribeToDefaultQueue(SnsClient snsClient, SqsClient sqsClient, SnsTopicDefinition topic) {
-        SqsQueueDefinition result = new SqsQueueDefinition(topic.getName() + "__default_sqs_queue", Type.fromShortName(topic.getType().getShortName()));
+        SqsQueueDefinition result = new SqsQueueDefinition(topic.defaultSubscriberName(), Type.fromShortName(topic.getType().getShortName()));
         
         var createdQueue = SqsQueueFactory.create(sqsClient, result);
         var attributesRequest = GetQueueAttributesRequest.builder()

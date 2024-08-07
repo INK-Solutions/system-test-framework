@@ -18,7 +18,7 @@ public class SnsConsumerService {
         try {
             var definition = findDefinition(topicName);
             if (definition.getProtocol().equals(Protocol.SQS)) {
-                sqsConsumerService.find(topicName + "__default_sqs_queue", body);
+                sqsConsumerService.find(definition.defaultSubscriberName(), body);
             }
         } catch (AssertionError e) {
             throw new AssertionError("It was expect that SNS topic " + topicName + " would have a message " + body);

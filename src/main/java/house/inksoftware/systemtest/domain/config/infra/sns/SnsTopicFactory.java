@@ -16,8 +16,9 @@ public class SnsTopicFactory {
     }
 
     private void create(SnsClient snsClient, SnsTopicDefinition topicDefinition) {
-        var createTopicRequestBuilder = CreateTopicRequest.builder();
-        createTopicRequestBuilder.name(topicDefinition.fullName());
+        var createTopicRequestBuilder = CreateTopicRequest.builder()
+            .name(topicDefinition.fullName());
+        
         if (topicDefinition.getType().equals(FIFO)) {
             createTopicRequestBuilder.attributes(Map.of(
                     "FifoTopic", "true",
@@ -28,6 +29,7 @@ public class SnsTopicFactory {
         } else {
             throw new IllegalArgumentException("Not supported SNS topic type: " + topicDefinition.getType());
         }
+        
         var request = createTopicRequestBuilder.build();
         var response = snsClient.createTopic(request);
     }

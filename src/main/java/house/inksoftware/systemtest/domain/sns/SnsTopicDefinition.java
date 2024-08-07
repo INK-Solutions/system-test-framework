@@ -18,6 +18,10 @@ public class SnsTopicDefinition {
     public String fullName() {
         return type.equals(Type.FIFO) ? name + ".fifo" : name;
     }
+    
+    public String defaultSubscriberName() {
+        return name + "__default_topic_subscriber";
+    }
 
     @SneakyThrows
     public static SnsTopicDefinition create(Map<String, String> data) {
