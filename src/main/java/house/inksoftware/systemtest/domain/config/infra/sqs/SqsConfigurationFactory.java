@@ -5,16 +5,15 @@ import house.inksoftware.systemtest.domain.config.infra.sqs.queue.SqsQueueFactor
 import house.inksoftware.systemtest.domain.sqs.SqsConsumerService;
 import house.inksoftware.systemtest.domain.sqs.SqsProducerService;
 import house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition;
-import software.amazon.awssdk.services.sqs.SqsClient;
-
 import java.util.List;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 public class SqsConfigurationFactory {
 
     public static SqsConfiguration create(SqsClient sqsClient,
                                           List<SqsQueueDefinition> queueDefinitions) {
 
-        createQueues(sqsClient, queueDefinitions);
+        SqsQueueFactory.create(sqsClient, queueDefinitions);
         SqsProducerService sqsProducerService = new SqsProducerService(sqsClient, queueDefinitions);
         SqsConsumerService sqsConsumerService = new SqsConsumerService(sqsClient, queueDefinitions);
 
@@ -24,11 +23,6 @@ public class SqsConfigurationFactory {
                 sqsProducerService,
                 sqsConsumerService
         );
-    }
-
-    public static void createQueues(SqsClient sqsClient, List<SqsQueueDefinition> queueDefinitions) {
-        var queueFactory = new SqsQueueFactory();
-        queueFactory.create(sqsClient, queueDefinitions);
     }
 
 }

@@ -1,24 +1,24 @@
 package house.inksoftware.systemtest.domain.config.infra.sqs.queue;
 
-import house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition;
-import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
-
-import java.util.List;
-import java.util.Map;
-
 import static house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition.Type.FIFO;
 import static house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition.Type.STANDARD;
 import static software.amazon.awssdk.services.sqs.model.QueueAttributeName.CONTENT_BASED_DEDUPLICATION;
 import static software.amazon.awssdk.services.sqs.model.QueueAttributeName.FIFO_QUEUE;
 
+import house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition;
+import java.util.List;
+import java.util.Map;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
+import software.amazon.awssdk.services.sqs.model.CreateQueueResponse;
+
 public class SqsQueueFactory {
 
-    public void create(SqsClient sqsClient, List<SqsQueueDefinition> queueDefinitions) {
+    public static void create(SqsClient sqsClient, List<SqsQueueDefinition> queueDefinitions) {
         queueDefinitions.forEach(queueDefinition -> create(sqsClient, queueDefinition));
     }
 
-    private void create(SqsClient sqsClient, SqsQueueDefinition queueDefinition) {
+    public static CreateQueueResponse create(SqsClient sqsClient, SqsQueueDefinition queueDefinition) {
         var createQueueRequestBuilder = CreateQueueRequest.builder();
         if (queueDefinition.getType().equals(FIFO)) {
             createQueueRequestBuilder.queueName(queueDefinition.getName() + ".fifo");
@@ -33,7 +33,7 @@ public class SqsQueueFactory {
             throw new IllegalArgumentException("Not supported SQS queue type: " + queueDefinition.getType());
         }
         var request = createQueueRequestBuilder.build();
-        sqsClient.createQueue(request);
+        return sqsClient.createQueue(request);
     }
 
 }

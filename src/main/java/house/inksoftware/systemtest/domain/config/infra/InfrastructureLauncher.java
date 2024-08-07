@@ -1,9 +1,12 @@
 package house.inksoftware.systemtest.domain.config.infra;
 
+import static house.inksoftware.systemtest.SystemTest.TEST_RESOURCES_PATH;
+
 import com.google.common.base.Preconditions;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.GrpcConfiguration;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.KafkaConfiguration;
+import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.SnsConfiguration;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration.SqsConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.db.SystemTestDatabasePopulatorLauncher;
 import house.inksoftware.systemtest.domain.config.infra.db.mssql.SystemTestMsSqlLauncher;
@@ -14,24 +17,26 @@ import house.inksoftware.systemtest.domain.config.infra.kafka.KafkaConfiguration
 import house.inksoftware.systemtest.domain.config.infra.kafka.SystemTestKafkaLauncher;
 import house.inksoftware.systemtest.domain.config.infra.mock.SystemTestMockedGrpcServerLauncher;
 import house.inksoftware.systemtest.domain.config.infra.mock.SystemTestMockedRestServerLauncher;
+import house.inksoftware.systemtest.domain.config.infra.sns.SnsConfigurationFactory;
+import house.inksoftware.systemtest.domain.config.infra.sns.SnsSubscribersConfig;
+import house.inksoftware.systemtest.domain.config.infra.sns.SystemTestSnsLauncher;
 import house.inksoftware.systemtest.domain.config.infra.sqs.SqsConfigurationFactory;
 import house.inksoftware.systemtest.domain.config.infra.sqs.SystemTestSqsLauncher;
 import house.inksoftware.systemtest.domain.kafka.topic.KafkaTopicDefinition;
+import house.inksoftware.systemtest.domain.sns.SnsTopicDefinition;
 import house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition;
-import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONArray;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.test.context.TestContext;
-import software.amazon.awssdk.services.sqs.SqsClient;
-
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static house.inksoftware.systemtest.SystemTest.TEST_RESOURCES_PATH;
+import javax.sql.DataSource;
+import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONArray;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.test.context.TestContext;
+import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sqs.SqsClient;
 
 @Slf4j
 public class InfrastructureLauncher {
@@ -63,6 +68,10 @@ public class InfrastructureLauncher {
                 var sqsClient = embeddedSqsClient();
                 var configuration = configureSqs(sqsClient, (JSONArray) ((LinkedHashMap) value).get("queues"));
                 result.setSqsConfiguration(configuration);
+            }  else if (key.equals("sns")) {
+                var snsClient = embeddedSnsClient();
+                var configuration = configureSns(snsClient, (JSONArray) ((LinkedHashMap) value).get("topics"));
+                result.setSnsConfiguration(configuration);
             } else if (key.equals("mockedServer")) {
                 String path = (String) ((LinkedHashMap) value).get("path");
                 launchMockedServer(path);
@@ -134,6 +143,18 @@ public class InfrastructureLauncher {
                 queueDefinitions
         );
     }
+    
+    private SnsConfiguration configureSns(SnsClient snsClient, JSONArray topics) {
+        List<SnsTopicDefinition> topicDefinitions = topics
+                .stream()
+                .map(entry -> SnsTopicDefinition.create((Map<String, String>) entry))
+                .toList();
+        return SnsConfigurationFactory.create(
+                snsClient,
+                topicDefinitions,
+                new SnsSubscribersConfig(this::embeddedSqsClient)
+        );
+    }
 
     private EmbeddedKafkaBroker embeddedKafkaBroker() {
         var kafkaLauncher = new SystemTestKafkaLauncher();
@@ -147,5 +168,12 @@ public class InfrastructureLauncher {
         resources.add(sqsLauncher);
         sqsLauncher.setup();
         return sqsLauncher.getSqsClient();
+    }
+    
+    private SnsClient embeddedSnsClient() {
+        var snsLauncher = new SystemTestSnsLauncher();
+        resources.add(snsLauncher);
+        snsLauncher.setup();
+        return snsLauncher.getSnsClient();
     }
 }
