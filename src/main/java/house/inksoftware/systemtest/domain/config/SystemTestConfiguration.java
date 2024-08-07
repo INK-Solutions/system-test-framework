@@ -5,16 +5,17 @@ import house.inksoftware.systemtest.domain.config.infra.kafka.incoming.KafkaEven
 import house.inksoftware.systemtest.domain.kafka.KafkaBackgroundConsumerService;
 import house.inksoftware.systemtest.domain.kafka.KafkaProducerService;
 import house.inksoftware.systemtest.domain.kafka.topic.KafkaTopicDefinition;
+import house.inksoftware.systemtest.domain.sns.SnsConsumerService;
+import house.inksoftware.systemtest.domain.sns.SnsTopicDefinition;
 import house.inksoftware.systemtest.domain.sqs.SqsConsumerService;
 import house.inksoftware.systemtest.domain.sqs.SqsProducerService;
 import house.inksoftware.systemtest.domain.sqs.queue.SqsQueueDefinition;
+import java.util.List;
 import lombok.Data;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class SystemTestConfiguration {
@@ -22,7 +23,15 @@ public class SystemTestConfiguration {
     private KafkaConfiguration kafkaConfiguration;
     private GrpcConfiguration grpcConfiguration;
     private SqsConfiguration sqsConfiguration;
+    private SnsConfiguration snsConfiguration;
     private List<SystemTestResourceLauncher> resources;
+    
+    @Data
+    public static class SnsConfiguration {
+        private final SnsClient snsClient;
+        private final List<SnsTopicDefinition> snsTopics;
+        private final SnsConsumerService snsConsumerService;
+    }
 
     @Data
     public static class SqsConfiguration {

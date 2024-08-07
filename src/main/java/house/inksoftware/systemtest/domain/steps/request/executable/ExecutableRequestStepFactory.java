@@ -7,7 +7,6 @@ import house.inksoftware.systemtest.domain.steps.request.executable.db.Executabl
 import house.inksoftware.systemtest.domain.steps.request.executable.kafka.ExecutableKafkaRequestStepFactory;
 import house.inksoftware.systemtest.domain.steps.request.executable.rest.ExecutableRestRequestStepFactory;
 import house.inksoftware.systemtest.domain.steps.request.executable.sqs.ExecutableSqsRequestStepFactory;
-
 import java.io.File;
 
 public class ExecutableRequestStepFactory {

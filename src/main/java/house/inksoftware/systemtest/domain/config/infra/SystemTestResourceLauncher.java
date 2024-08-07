@@ -12,6 +12,7 @@ public interface SystemTestResourceLauncher {
         SERVER,
         DATABASE,
         KAFKA,
-        SQS
+        SQS,
+        SNS
     }
 }
