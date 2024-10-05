@@ -6,7 +6,7 @@ import house.inksoftware.systemtest.domain.steps.request.RequestStep;
 import house.inksoftware.systemtest.domain.steps.request.executable.db.ExecutableDatabaseRequestStepFactory;
 import house.inksoftware.systemtest.domain.steps.request.executable.kafka.ExecutableKafkaRequestStepFactory;
 import house.inksoftware.systemtest.domain.steps.request.executable.rest.ExecutableRestRequestStepFactory;
-
+import house.inksoftware.systemtest.domain.steps.request.executable.sqs.ExecutableSqsRequestStepFactory;
 import java.io.File;
 
 public class ExecutableRequestStepFactory {
@@ -19,6 +19,8 @@ public class ExecutableRequestStepFactory {
             return ExecutableRestRequestStepFactory.create(baseFolder, requestStep);
         } else if (requestFile.getName().equals("kafka-request.json")) {
             return ExecutableKafkaRequestStepFactory.create(requestStep);
+        } else if (requestFile.getName().equals("sqs-request.json")) {
+           return ExecutableSqsRequestStepFactory.create(requestStep);
         } else if (requestFile.getName().equals("db-request.json")) {
             return ExecutableDatabaseRequestStepFactory.create(requestStep, context);
         } else {

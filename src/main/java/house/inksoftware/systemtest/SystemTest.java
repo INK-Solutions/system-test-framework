@@ -7,6 +7,7 @@ import house.inksoftware.systemtest.domain.SystemTestExecutionServiceFactory;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.InfrastructureConfiguration;
 import house.inksoftware.systemtest.domain.config.infra.InfrastructureLauncher;
+import house.inksoftware.systemtest.domain.config.infra.SystemTestResourceLauncher;
 import house.inksoftware.systemtest.domain.config.infra.kafka.incoming.KafkaEventProcessedCallback;
 import house.inksoftware.systemtest.domain.context.SystemTestContext;
 import house.inksoftware.systemtest.domain.steps.request.RequestStep;
@@ -17,12 +18,16 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.*;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestContext;
+import org.springframework.test.context.TestExecutionListener;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
@@ -67,7 +72,6 @@ public class SystemTest implements TestExecutionListener {
                 "File system-test-configuration.json is not found! Please add it and define your infra requirements.",
                 systemTestConfFile.isPresent()
         );
-
         LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
         infrastructureLauncher.launchDb(testContext, infrastructure);
         config = infrastructureLauncher.launchAllInfra(infrastructure);
@@ -98,10 +102,14 @@ public class SystemTest implements TestExecutionListener {
             try {
                 testBusinessLogic(config, systemTestConfFile.get());
             } finally {
-                infrastructureLauncher.shutdown();
+                shutdownInfrastructure();
             }
         }
 
+    }
+
+    private static void shutdownInfrastructure() {
+        config.getResources().forEach(SystemTestResourceLauncher::shutdown);
     }
 
     private static LinkedHashMap<String, Object> findInfraConfig(File systemTestConfFile) throws Exception {

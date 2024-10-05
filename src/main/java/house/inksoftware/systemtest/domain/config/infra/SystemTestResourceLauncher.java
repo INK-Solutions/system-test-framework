@@ -11,6 +11,8 @@ public interface SystemTestResourceLauncher {
     enum Type {
         SERVER,
         DATABASE,
-        KAFKA
+        KAFKA,
+        SQS,
+        SNS
     }
 }

@@ -4,14 +4,15 @@ import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.steps.response.kafka.ExpectedKafkaRequestProcessedStep;
 import house.inksoftware.systemtest.domain.steps.response.kafka.ExpectedKafkaResponseStep;
 import house.inksoftware.systemtest.domain.steps.response.rest.ExpectedRestResponseStep;
+import house.inksoftware.systemtest.domain.steps.response.sns.ExpectedSnsResponseStep;
+import house.inksoftware.systemtest.domain.steps.response.sqs.ExpectedSqsResponseStep;
 import house.inksoftware.systemtest.domain.utils.FileUtils;
-import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 
 @RequiredArgsConstructor
 public class ExpectedResponseStepFactory {
@@ -38,10 +39,14 @@ public class ExpectedResponseStepFactory {
         String json = FileUtils.readFileContent(fullPath);
         if (fullPath.endsWith("rest-response.json")) {
             return ExpectedRestResponseStep.from(json);
-        } else if (fullPath.endsWith("event.json")) {
+        } else if (fullPath.endsWith("kafka-event.json")) {
             return ExpectedKafkaResponseStep.from(json, systemTestConfiguration.getKafkaConfiguration());
-        }else if (fullPath.endsWith("kafka-request-processed.json")) {
+        } else if (fullPath.endsWith("kafka-request-processed.json")) {
             return ExpectedKafkaRequestProcessedStep.from(json, systemTestConfiguration.getKafkaConfiguration());
+        } else if (fullPath.endsWith("sqs-event.json")) {
+            return ExpectedSqsResponseStep.from(json, systemTestConfiguration.getSqsConfiguration());
+        } else if (fullPath.endsWith("sns-message.json")) {
+            return ExpectedSnsResponseStep.from(json, systemTestConfiguration.getSnsConfiguration());
         } else {
             throw new IllegalArgumentException("Expected response file should be named: event.json or rest-response.json");
         }
