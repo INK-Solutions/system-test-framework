@@ -81,10 +81,10 @@ publishing {
     }
 }
 
-//signing {
-//    sign configurations.archives
-//    sign publishing.publications.mavenJava
-//}
+signing {
+   sign configurations.archives
+   sign publishing.publications.mavenJava
+}
 
 dependencies {
     implementation 'com.guicedee.services:sl4j:1.0.13.5'
