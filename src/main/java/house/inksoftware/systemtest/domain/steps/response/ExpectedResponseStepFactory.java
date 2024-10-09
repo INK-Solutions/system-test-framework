@@ -3,7 +3,6 @@ package house.inksoftware.systemtest.domain.steps.response;
 import house.inksoftware.systemtest.domain.config.SystemTestConfiguration;
 import house.inksoftware.systemtest.domain.steps.response.kafka.ExpectedKafkaRequestProcessedStep;
 import house.inksoftware.systemtest.domain.steps.response.kafka.ExpectedKafkaResponseStep;
-import house.inksoftware.systemtest.domain.steps.response.openai.ExpectedAIResponseStep;
 import house.inksoftware.systemtest.domain.steps.response.rest.ExpectedRestResponseStep;
 import house.inksoftware.systemtest.domain.steps.response.sns.ExpectedSnsResponseStep;
 import house.inksoftware.systemtest.domain.steps.response.sqs.ExpectedSqsResponseStep;
@@ -38,9 +37,7 @@ public class ExpectedResponseStepFactory {
     @SneakyThrows
     private ExpectedResponseStep createStep(String fullPath) {
         String json = FileUtils.readFileContent(fullPath);
-        if(fullPath.endsWith("open-ai-response.json")) {
-            return ExpectedAIResponseStep.from(json);
-        } else if (fullPath.endsWith("rest-response.json")) {
+        if (fullPath.endsWith("rest-response.json")) {
             return ExpectedRestResponseStep.from(json);
         } else if (fullPath.endsWith("kafka-event.json")) {
             return ExpectedKafkaResponseStep.from(json, systemTestConfiguration.getKafkaConfiguration());
