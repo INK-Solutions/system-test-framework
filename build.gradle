@@ -98,6 +98,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
     implementation 'commons-io:commons-io:2.12.0'
     implementation 'com.github.mpkorstanje:simmetrics-core:4.1.1'
+    implementation 'org.apache.lucene:lucene-core:9.12.0'
+    implementation 'org.apache.lucene:lucene-analyzers-common:8.11.4'
 
     implementation 'org.apache.kafka:kafka-clients:3.6.0'
     implementation 'tech.allegro.schema.json2avro:converter:0.2.15'

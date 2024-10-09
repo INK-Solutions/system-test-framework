@@ -7,10 +7,18 @@ import house.inksoftware.systemtest.domain.steps.response.ExpectedResponseStep;
 import house.inksoftware.systemtest.domain.utils.JsonUtils;
 import lombok.Data;
 import lombok.SneakyThrows;
+
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.index.*;
 import org.json.JSONException;
 import org.junit.Assert;
-import org.simmetrics.StringMetric;
-import org.simmetrics.metrics.StringMetrics;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.ByteBuffersDirectory;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,7 +52,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
             }
         }
         Set<String> allFieldSet = new HashSet<>();
-        allFieldSet = getAllFieldNames(allFieldSet, "", body);
+        allFieldSet = getAllFieldNamesFromJSON(allFieldSet, "", body);
         return new ExpectedRestResponseStep(httpCode, body, verification, verificationFieldSet, allFieldSet);
     }
 
@@ -77,8 +85,8 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         toBeComparedNormaly.removeAll(verificationFieldSet);
 
         for(String field : toBeComparedNormaly) {
-            JsonNode field1 = getValueByAttributePath(body, field);
-            JsonNode field2 = getValueByAttributePath(actualResponseBody, field);
+            JsonNode field1 = getNodeByAttributePath(body, field);
+            JsonNode field2 = getNodeByAttributePath(actualResponseBody, field);
 
             assertEquals(field1, field2);
         }
@@ -90,8 +98,8 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         while(verificationSteps.hasNext()) {
             JsonNode verificationStep = verificationSteps.next();
 
-            JsonNode field1 = getValueByAttributePath(body, verificationStep.path("field").asText());
-            JsonNode field2 = getValueByAttributePath(actualResponseBody, verificationStep.path("field").asText());
+            JsonNode field1 = getNodeByAttributePath(body, verificationStep.path("field").asText());
+            JsonNode field2 = getNodeByAttributePath(actualResponseBody, verificationStep.path("field").asText());
 
             String verificationType = verificationStep.path("type").asText();
             if (verificationType.equals("cosine-similarity")) {
@@ -102,7 +110,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         }
     }
 
-    private static Set<String> getAllFieldNames(Set<String> result, String currentField, JsonNode node) {
+    private static Set<String> getAllFieldNamesFromJSON(Set<String> result, String currentField, JsonNode node) {
         if(!node.isContainerNode()) {
             result.add(currentField);
             return result;
@@ -112,7 +120,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
                 int size = node.size();
                 for(int i=0; i<size; i++) {
                     JsonNode next = node.get(i);
-                    result = getAllFieldNames(result, currentField+"["+i+"]", next);
+                    result = getAllFieldNamesFromJSON(result, currentField+"["+i+"]", next);
                 }
             } else {
                 // if dict
@@ -120,7 +128,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
                 while(fields.hasNext()) {
                     String field = fields.next();
                     String nextField = currentField.isBlank() ? field : currentField + "." + field;
-                    result = getAllFieldNames(result, nextField, node.path(field));
+                    result = getAllFieldNamesFromJSON(result, nextField, node.path(field));
                 }
             }
         }
@@ -129,12 +137,79 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
 
     private static void compareByCosineSimilarity(JsonNode verificationStep, JsonNode field1, JsonNode field2) {
         double minSimilarityThreshold = verificationStep.path("minSimilarityThreshold").asDouble();
-        StringMetric cosineSimilarity = StringMetrics.cosineSimilarity();
-        float similarity = cosineSimilarity.compare(field1.asText(), field2.asText());
+
+        double similarity = cosineSimilarityCalculation(field1.asText(), field2.asText());
+
         assertTrue("texts are not similar ("+field1.asText()+", "+field2.asText()+"), similarity: "+String.valueOf(similarity), similarity >= minSimilarityThreshold);
     }
 
-    private JsonNode getValueByAttributePath(JsonNode body, String path) {
+    @SneakyThrows
+    private static double cosineSimilarityCalculation(String s1, String s2) {
+        Directory directory = new ByteBuffersDirectory();
+        Analyzer analyzer = new StandardAnalyzer();
+        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+        IndexWriter writer = new IndexWriter(directory, config);
+
+        FieldType fieldType = new FieldType();
+        fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
+        fieldType.setTokenized(true);
+        fieldType.setStored(true);
+        fieldType.setStoreTermVectors(true);
+        fieldType.setStoreTermVectorPositions(true);
+        fieldType.setStoreTermVectorOffsets(true);
+
+        Document document1 = new Document();
+        document1.add(new Field("s1", s1, fieldType));
+        writer.addDocument(document1);
+
+        Document document2 = new Document();
+        document2.add(new Field("s2", s2, fieldType));
+        writer.addDocument(document2);
+
+        writer.close();
+
+        DirectoryReader reader = DirectoryReader.open(directory);
+        ClassicSimilarity similarity = new ClassicSimilarity();
+
+        Terms terms1 = reader.getTermVectors(0).terms("s1");
+        Terms terms2 = reader.getTermVectors(1).terms("s2");
+
+        if (terms1 == null || terms2 == null) {
+            return 0.0; // One of the documents has no terms
+        }
+
+        double dotProduct = 0.0;
+        double magnitude1 = 0.0;
+        double magnitude2 = 0.0;
+
+        TermsEnum termsEnum1 = terms1.iterator();
+        while (termsEnum1.next() != null) {
+            String term = termsEnum1.term().utf8ToString();
+            int freq1 = (int) termsEnum1.docFreq();
+            int freq2 = 0;
+
+            TermsEnum termsEnum2 = terms2.iterator();
+            while (termsEnum2.next() != null) {
+                if (term.equals(termsEnum2.term().utf8ToString())) {
+                    freq2 = (int) termsEnum2.docFreq();
+                    break;
+                }
+            }
+
+            dotProduct += freq1 * freq2;
+            magnitude1 += freq1 * freq1;
+            magnitude2 += freq2 * freq2;
+        }
+
+        if (magnitude1 == 0 || magnitude2 == 0) {
+            return 0.0;
+        }
+
+        // Calculate cosine similarity
+        return dotProduct / (Math.sqrt(magnitude1) * Math.sqrt(magnitude2));
+    }
+
+    private JsonNode getNodeByAttributePath(JsonNode body, String path) {
         String[] attributes = path.split("\\.");
         JsonNode result = body;
 
