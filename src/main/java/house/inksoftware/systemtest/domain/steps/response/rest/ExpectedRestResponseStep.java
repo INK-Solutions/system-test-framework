@@ -31,8 +31,8 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
     private final int httpCode;
     private final JsonNode body;
     private final JsonNode verification;
-    private final Set<String> verificationFieldSet;
-    private final Set<String> allFieldSet;
+    private final Set<String> verificationFieldsSet;
+    private final Set<String> allFieldsSet;
 
     @SneakyThrows
     public static ExpectedRestResponseStep from(String json) {
@@ -62,7 +62,6 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         if(verification.isMissingNode()) {
             compareIfExactSame(response);
         } else {
-            // use verification
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode actualResponseBody = objectMapper.readTree(response.body());
 
@@ -81,8 +80,8 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
     }
 
     private void compareNormalWay(JsonNode actualResponseBody) {
-        Set<String> toBeComparedNormaly = new HashSet<>(allFieldSet);
-        toBeComparedNormaly.removeAll(verificationFieldSet);
+        Set<String> toBeComparedNormaly = new HashSet<>(allFieldsSet);
+        toBeComparedNormaly.removeAll(verificationFieldsSet);
 
         for(String field : toBeComparedNormaly) {
             JsonNode field1 = getNodeByAttributePath(body, field);
@@ -116,14 +115,12 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
             return result;
         } else {
             if(node.isArray()) {
-                // if array
                 int size = node.size();
                 for(int i=0; i<size; i++) {
                     JsonNode next = node.get(i);
                     result = getAllFieldNamesFromJSON(result, currentField+"["+i+"]", next);
                 }
             } else {
-                // if dict
                 Iterator<String> fields = node.fieldNames();
                 while(fields.hasNext()) {
                     String field = fields.next();
@@ -175,7 +172,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         Terms terms2 = reader.getTermVectors(1).terms("s2");
 
         if (terms1 == null || terms2 == null) {
-            return 0.0; // One of the documents has no terms
+            return 0.0;
         }
 
         double dotProduct = 0.0;
@@ -205,7 +202,6 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
             return 0.0;
         }
 
-        // Calculate cosine similarity
         return dotProduct / (Math.sqrt(magnitude1) * Math.sqrt(magnitude2));
     }
 
