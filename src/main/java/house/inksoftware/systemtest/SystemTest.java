@@ -118,6 +118,17 @@ public class SystemTest implements TestExecutionListener {
                        .read("infrastructure");
     }
 
+    private static LinkedHashMap<String, Object> findLlmConfig(File systemTestConfFile) throws Exception {
+        return JsonPath
+                .parse(FileUtils.readFile(systemTestConfFile))
+                .read("llm");
+    }
+
+    @SneakyThrows
+    public static String getApiKey() {
+        return (String) findLlmConfig(findSystemTestConfig().get()).get("openAiApiKey");
+    }
+
     private void testBusinessLogic(SystemTestConfiguration config, File systemTestConfig) {
         Arrays.stream(systemTestConfig.getParentFile().listFiles())
               .filter(File::isDirectory)

@@ -2,27 +2,20 @@ package house.inksoftware.systemtest.domain.steps.response.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import house.inksoftware.systemtest.SystemTest;
 import house.inksoftware.systemtest.domain.steps.response.ActualResponse;
 import house.inksoftware.systemtest.domain.steps.response.ExpectedResponseStep;
 import house.inksoftware.systemtest.domain.utils.JsonUtils;
 import lombok.Data;
 import lombok.SneakyThrows;
 
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.index.*;
 import org.json.JSONException;
 import org.junit.Assert;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.ByteBuffersDirectory;
-import org.apache.lucene.search.similarities.ClassicSimilarity;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
+
+import okhttp3.*;
 
 import static org.junit.Assert.*;
 
@@ -135,74 +128,55 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
     private static void compareByCosineSimilarity(JsonNode verificationStep, JsonNode field1, JsonNode field2) {
         double minSimilarityThreshold = verificationStep.path("minSimilarityThreshold").asDouble();
 
-        double similarity = cosineSimilarityCalculation(field1.asText(), field2.asText());
+        Double[] vector1 = callAdaModel(field1.asText());
+        Double[] vector2 = callAdaModel(field2.asText());
+
+        double similarity = cosineSimilarityCalculation(vector1, vector2);
 
         assertTrue("texts are not similar ("+field1.asText()+", "+field2.asText()+"), similarity: "+String.valueOf(similarity), similarity >= minSimilarityThreshold);
     }
 
     @SneakyThrows
-    private static double cosineSimilarityCalculation(String s1, String s2) {
-        Directory directory = new ByteBuffersDirectory();
-        Analyzer analyzer = new StandardAnalyzer();
-        IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        IndexWriter writer = new IndexWriter(directory, config);
+    private static Double[] callAdaModel(String text) {
+        String apiKey = SystemTest.getApiKey();
+        String url = "https://api.openai.com/v1/embeddings";
+        String model = "text-embedding-ada-002";
 
-        FieldType fieldType = new FieldType();
-        fieldType.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
-        fieldType.setTokenized(true);
-        fieldType.setStored(true);
-        fieldType.setStoreTermVectors(true);
-        fieldType.setStoreTermVectorPositions(true);
-        fieldType.setStoreTermVectorOffsets(true);
+        String json = String.format("{\"input\": \"%s\", \"model\": \"%s\"}", text, model);
+        RequestBody body = RequestBody.create(json, MediaType.get("application/json; charset=utf-8"));
 
-        Document document1 = new Document();
-        document1.add(new Field("s1", s1, fieldType));
-        writer.addDocument(document1);
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .addHeader("Content-type", "application/json")
+                .addHeader("Authorization","Bearer "+apiKey)
+                .build();
 
-        Document document2 = new Document();
-        document2.add(new Field("s2", s2, fieldType));
-        writer.addDocument(document2);
-
-        writer.close();
-
-        DirectoryReader reader = DirectoryReader.open(directory);
-        ClassicSimilarity similarity = new ClassicSimilarity();
-
-        Terms terms1 = reader.getTermVectors(0).terms("s1");
-        Terms terms2 = reader.getTermVectors(1).terms("s2");
-
-        if (terms1 == null || terms2 == null) {
-            return 0.0;
-        }
-
-        double dotProduct = 0.0;
-        double magnitude1 = 0.0;
-        double magnitude2 = 0.0;
-
-        TermsEnum termsEnum1 = terms1.iterator();
-        while (termsEnum1.next() != null) {
-            String term = termsEnum1.term().utf8ToString();
-            int freq1 = (int) termsEnum1.docFreq();
-            int freq2 = 0;
-
-            TermsEnum termsEnum2 = terms2.iterator();
-            while (termsEnum2.next() != null) {
-                if (term.equals(termsEnum2.term().utf8ToString())) {
-                    freq2 = (int) termsEnum2.docFreq();
-                    break;
-                }
+        OkHttpClient client = new OkHttpClient();
+        try (Response response = client.newCall(request).execute()) {
+            String responseBody = response.body().string();
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            Iterator<JsonNode> iterator = jsonNode.get("data").get(0).get("embedding").elements();
+            List<Double> doubles = new LinkedList<>();
+            while(iterator.hasNext()) {
+                JsonNode next = iterator.next();
+                doubles.add(next.asDouble());
             }
-
-            dotProduct += freq1 * freq2;
-            magnitude1 += freq1 * freq1;
-            magnitude2 += freq2 * freq2;
+            return doubles.toArray(new Double[0]);
         }
+    }
 
-        if (magnitude1 == 0 || magnitude2 == 0) {
-            return 0.0;
+    public static double cosineSimilarityCalculation(Double[] v1, Double[] v2) {
+        double dotProduct = 0.0;
+        double normA = 0.0;
+        double normB = 0.0;
+        for (int i = 0; i < v1.length; i++) {
+            dotProduct += v1[i] * v2[i];
+            normA += Math.pow(v1[i], 2);
+            normB += Math.pow(v2[i], 2);
         }
-
-        return dotProduct / (Math.sqrt(magnitude1) * Math.sqrt(magnitude2));
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
     private JsonNode getNodeByAttributePath(JsonNode body, String path) {
