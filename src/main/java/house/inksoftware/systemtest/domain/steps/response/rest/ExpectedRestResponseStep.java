@@ -9,10 +9,10 @@ import house.inksoftware.systemtest.domain.utils.JsonUtils;
 import lombok.Data;
 import lombok.SneakyThrows;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.junit.Assert;
 
-import java.io.IOException;
 import java.util.*;
 
 import okhttp3.*;
@@ -29,34 +29,34 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
 
     @SneakyThrows
     public static ExpectedRestResponseStep from(String json) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode root = objectMapper.readTree(json);
+        var objectMapper = new ObjectMapper();
+        var root = objectMapper.readTree(json);
 
-        int httpCode = root.get("httpCode").asInt();
-        JsonNode body = root.path("body");
-        JsonNode verification = root.path("verification");
+        var httpCode = root.get("httpCode").asInt();
+        var body = root.path("body");
+        var verification = root.path("verification");
 
         Set<String> verificationFieldSet = new HashSet<>();
-        if(!verification.isMissingNode()) {
-            Iterator<JsonNode> iterator = verification.elements();
+        if (!verification.isMissingNode()) {
+            var iterator = verification.elements();
             while (iterator.hasNext()) {
-                JsonNode next = iterator.next();
+                var next = iterator.next();
                 verificationFieldSet.add(next.get("field").asText());
             }
         }
         Set<String> allFieldSet = new HashSet<>();
-        allFieldSet = getAllFieldNamesFromJSON(allFieldSet, "", body);
+        allFieldSet = findAllFieldNamesFromJSON(allFieldSet, "", body);
         return new ExpectedRestResponseStep(httpCode, body, verification, verificationFieldSet, allFieldSet);
     }
 
     @Override
     @SneakyThrows
-    public void assertResponseIsCorrect(ActualResponse response) throws JSONException {
-        if(verification.isMissingNode()) {
+    public void assertResponseIsCorrect(ActualResponse response) {
+        if (verification.isMissingNode()) {
             compareIfExactSame(response);
         } else {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode actualResponseBody = objectMapper.readTree(response.body());
+            var objectMapper = new ObjectMapper();
+            var actualResponseBody = objectMapper.readTree(response.body());
 
             compareHttpStatuses(actualResponseBody);
 
@@ -73,27 +73,37 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
     }
 
     private void compareNormalWay(JsonNode actualResponseBody) {
-        Set<String> toBeComparedNormaly = new HashSet<>(allFieldsSet);
-        toBeComparedNormaly.removeAll(verificationFieldsSet);
+        var fieldsToBeComparedNormally = findAllFieldsToBeComparedNormally();
 
-        for(String field : toBeComparedNormaly) {
-            JsonNode field1 = getNodeByAttributePath(body, field);
-            JsonNode field2 = getNodeByAttributePath(actualResponseBody, field);
+        fieldsToBeComparedNormally
+                .forEach(field -> compareFieldNormally(actualResponseBody, field));
+    }
 
-            assertEquals(field1, field2);
-        }
+    private void compareFieldNormally(JsonNode actualResponseBody, String field) {
+        JsonNode field1 = getNodeByAttributePath(body, field);
+        JsonNode field2 = getNodeByAttributePath(actualResponseBody, field);
+
+        assertEquals(field1, field2);
+    }
+
+    @NotNull
+    private HashSet<String> findAllFieldsToBeComparedNormally() {
+        var result = new HashSet<>(allFieldsSet);
+        result.removeAll(verificationFieldsSet);
+
+        return result;
     }
 
     private void compareUsingVerification(JsonNode actualResponseBody) {
-        Iterator<JsonNode> verificationSteps = verification.elements();
+        var verificationSteps = verification.elements();
 
-        while(verificationSteps.hasNext()) {
-            JsonNode verificationStep = verificationSteps.next();
+        while (verificationSteps.hasNext()) {
+            var verificationStep = verificationSteps.next();
 
-            JsonNode field1 = getNodeByAttributePath(body, verificationStep.path("field").asText());
-            JsonNode field2 = getNodeByAttributePath(actualResponseBody, verificationStep.path("field").asText());
+            var field1 = getNodeByAttributePath(body, verificationStep.path("field").asText());
+            var field2 = getNodeByAttributePath(actualResponseBody, verificationStep.path("field").asText());
 
-            String verificationType = verificationStep.path("type").asText();
+            var verificationType = verificationStep.path("type").asText();
             if (verificationType.equals("cosine-similarity")) {
                 compareByCosineSimilarity(verificationStep, field1, field2);
             } else {
@@ -102,38 +112,59 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         }
     }
 
-    private static Set<String> getAllFieldNamesFromJSON(Set<String> result, String currentField, JsonNode node) {
-        if(!node.isContainerNode()) {
+    private static Set<String> findAllFieldNamesFromJSON(Set<String> result, String currentField, JsonNode node) {
+        var isLeaf = !node.isContainerNode();
+
+        if (isLeaf) {
             result.add(currentField);
             return result;
         } else {
-            if(node.isArray()) {
-                int size = node.size();
-                for(int i=0; i<size; i++) {
-                    JsonNode next = node.get(i);
-                    result = getAllFieldNamesFromJSON(result, currentField+"["+i+"]", next);
-                }
-            } else {
-                Iterator<String> fields = node.fieldNames();
-                while(fields.hasNext()) {
-                    String field = fields.next();
-                    String nextField = currentField.isBlank() ? field : currentField + "." + field;
-                    result = getAllFieldNamesFromJSON(result, nextField, node.path(field));
-                }
-            }
+            result = pathFurtherNodes(result, currentField, node);
         }
+        return result;
+    }
+
+    private static Set<String> pathFurtherNodes(Set<String> result, String currentField, JsonNode node) {
+        var isArrayNode = node.isArray();
+
+        if (isArrayNode) {
+            result = findAllFieldsFromJSONArray(result, currentField, node);
+        } else {
+            result = findAllFieldsFromJSONDictionary(result, currentField, node);
+        }
+        return result;
+    }
+
+    private static Set<String> findAllFieldsFromJSONDictionary(Set<String> result, String currentField, JsonNode node) {
+        var fields = node.fieldNames();
+        while(fields.hasNext()) {
+            var field = fields.next();
+            var nextField = currentField.isBlank() ? field : currentField + "." + field;
+            result = findAllFieldNamesFromJSON(result, nextField, node.path(field));
+        }
+        return result;
+    }
+
+    private static Set<String> findAllFieldsFromJSONArray(Set<String> result, String currentField, JsonNode node) {
+        int size = node.size();
+
+        for (int i=0; i<size; i++) {
+            var next = node.get(i);
+            result = findAllFieldNamesFromJSON(result, currentField +"["+i+"]", next);
+        }
+
         return result;
     }
 
     private static void compareByCosineSimilarity(JsonNode verificationStep, JsonNode field1, JsonNode field2) {
         double minSimilarityThreshold = verificationStep.path("minSimilarityThreshold").asDouble();
 
-        Double[] vector1 = callAdaModel(field1.asText());
-        Double[] vector2 = callAdaModel(field2.asText());
+        var vector1 = callAdaModel(field1.asText());
+        var vector2 = callAdaModel(field2.asText());
 
         double similarity = cosineSimilarityCalculation(vector1, vector2);
 
-        assertTrue("texts are not similar ("+field1.asText()+", "+field2.asText()+"), similarity: "+String.valueOf(similarity), similarity >= minSimilarityThreshold);
+        assertTrue("texts are not similar ("+field1.asText()+", "+field2.asText()+"), similarity: "+ similarity, similarity >= minSimilarityThreshold);
     }
 
     @SneakyThrows
@@ -143,57 +174,75 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         String model = "text-embedding-ada-002";
 
         String json = String.format("{\"input\": \"%s\", \"model\": \"%s\"}", text, model);
-        RequestBody body = RequestBody.create(json, MediaType.get("application/json; charset=utf-8"));
+        var body = RequestBody.create(json, MediaType.get("application/json; charset=utf-8"));
 
-        Request request = new Request.Builder()
+        var request = new Request.Builder()
                 .url(url)
                 .post(body)
                 .addHeader("Content-type", "application/json")
                 .addHeader("Authorization","Bearer "+apiKey)
                 .build();
 
-        OkHttpClient client = new OkHttpClient();
-        try (Response response = client.newCall(request).execute()) {
-            String responseBody = response.body().string();
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(responseBody);
-            Iterator<JsonNode> iterator = jsonNode.get("data").get(0).get("embedding").elements();
+        var client = new OkHttpClient();
+        try (var response = client.newCall(request).execute()) {
+            assertNotNull(response.body());
+            var responseBody = response.body().string();
+
+            var objectMapper = new ObjectMapper();
+            var jsonNode = objectMapper.readTree(responseBody);
             List<Double> doubles = new LinkedList<>();
-            while(iterator.hasNext()) {
+
+            var iterator = jsonNode.get("data").get(0).get("embedding").elements();
+            while (iterator.hasNext()) {
                 JsonNode next = iterator.next();
                 doubles.add(next.asDouble());
             }
-            return doubles.toArray(new Double[0]);
+
+            return doubles.toArray(Double[]::new);
         }
     }
 
-    public static double cosineSimilarityCalculation(Double[] v1, Double[] v2) {
+    public static double cosineSimilarityCalculation(Double[] vector1, Double[] vector2) {
         double dotProduct = 0.0;
-        double normA = 0.0;
-        double normB = 0.0;
-        for (int i = 0; i < v1.length; i++) {
-            dotProduct += v1[i] * v2[i];
-            normA += Math.pow(v1[i], 2);
-            normB += Math.pow(v2[i], 2);
+        double norm1 = 0.0;
+        double norm2 = 0.0;
+
+        for (int i = 0; i < vector1.length; i++) {
+            dotProduct += vector1[i] * vector2[i];
+            norm1 += Math.pow(vector1[i], 2);
+            norm2 += Math.pow(vector2[i], 2);
         }
-        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+
+        return dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
     }
 
     private JsonNode getNodeByAttributePath(JsonNode body, String path) {
-        String[] attributes = path.split("\\.");
-        JsonNode result = body;
+        var attributes = path.split("\\.");
+        var result = body;
 
         for(String attribute : attributes) {
-            if(attribute.contains("[")) {
-                int index = Integer.parseInt(attribute.substring(attribute.indexOf("[")+1, attribute.indexOf("]")));
-                String variableName = attribute.substring(0, attribute.indexOf("["));
-
-                result = result.path(variableName).get(index);
-
+            var isArrayIndexed = attribute.contains("[");
+            if (isArrayIndexed) {
+                result = pathArrayIndex(attribute, result);
             } else {
-                result = result.path(attribute);
+                result = pathNormalAttribute(attribute, result);
             }
         }
+
+        return result;
+    }
+
+    private static JsonNode pathNormalAttribute(String attribute, JsonNode result) {
+        result = result.path(attribute);
+
+        return result;
+    }
+
+    private static JsonNode pathArrayIndex(String attribute, JsonNode result) {
+        var index = Integer.parseInt(attribute.substring(attribute.indexOf("[")+1, attribute.indexOf("]")));
+        var variableName = attribute.substring(0, attribute.indexOf("["));
+
+        result = result.path(variableName).get(index);
 
         return result;
     }
