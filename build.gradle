@@ -82,8 +82,8 @@ publishing {
 }
 
 signing {
-    sign configurations.archives
-    sign publishing.publications.mavenJava
+   sign configurations.archives
+   sign publishing.publications.mavenJava
 }
 
 dependencies {
