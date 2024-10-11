@@ -2,6 +2,7 @@ package house.inksoftware.systemtest.domain.steps.response.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import house.inksoftware.systemtest.SystemTest;
 import house.inksoftware.systemtest.domain.steps.response.ActualResponse;
 import house.inksoftware.systemtest.domain.steps.response.ExpectedResponseStep;
@@ -24,6 +25,7 @@ import static org.junit.Assert.*;
 public class ExpectedRestResponseStep implements ExpectedResponseStep {
     private final int httpCode;
     private final JsonNode body;
+    private final String bodyAsJson;
     private final JsonNode verification;
     private final Set<String> verificationFieldsSet;
     private final Set<String> allFieldsSet;
@@ -35,6 +37,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
 
         var httpCode = root.get("httpCode").asInt();
         var body = root.path("body");
+        var bodyAsJson = JsonPath.parse(json).jsonString();
         var verification = root.path("verification");
 
         Set<String> verificationFieldSet = new HashSet<>();
@@ -44,7 +47,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         }
         Set<String> allFieldSet = new HashSet<>();
         allFieldSet = findAllFieldNamesFromJSON(allFieldSet, "", body);
-        return new ExpectedRestResponseStep(httpCode, body, verification, verificationFieldSet, allFieldSet);
+        return new ExpectedRestResponseStep(httpCode, body, bodyAsJson, verification, verificationFieldSet, allFieldSet);
     }
 
     @Override
@@ -62,7 +65,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         actualResponseBody = actualResponseBody.path("body");
 
         compareUsingVerification(actualResponseBody);
-        compareNormalWay(actualResponseBody);
+        compareIfExactSame(actualResponseBody);
 
     }
 
@@ -70,14 +73,14 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         assertEquals(httpCode, actualResponseBody.get("httpCode").asInt());
     }
 
-    private void compareNormalWay(JsonNode actualResponseBody) {
-        var fieldsToBeComparedNormally = findAllFieldsToBeComparedNormally();
+    private void compareIfExactSame(JsonNode actualResponseBody) {
+        var fieldsToBeComparedIfIdentical = findAllFieldsToBeComparedIfIdentical();
 
-        fieldsToBeComparedNormally
-                .forEach(field -> compareFieldNormally(actualResponseBody, field));
+        fieldsToBeComparedIfIdentical
+                .forEach(field -> compareFieldIfIdentical(actualResponseBody, field));
     }
 
-    private void compareFieldNormally(JsonNode actualResponseBody, String field) {
+    private void compareFieldIfIdentical(JsonNode actualResponseBody, String field) {
         JsonNode field1 = getNodeByAttributePath(body, field);
         JsonNode field2 = getNodeByAttributePath(actualResponseBody, field);
 
@@ -85,7 +88,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
     }
 
     @NotNull
-    private HashSet<String> findAllFieldsToBeComparedNormally() {
+    private HashSet<String> findAllFieldsToBeComparedIfIdentical() {
         var result = new HashSet<>(allFieldsSet);
         result.removeAll(verificationFieldsSet);
 
@@ -116,6 +119,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
             result.add(currentField);
             return result;
         }
+        
         return pathFurtherNodes(result, currentField, node);
     }
 
@@ -142,7 +146,7 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
     private static Set<String> findAllFieldsFromJSONArray(Set<String> result, String currentField, JsonNode node) {
 
         IntStream.range(0, node.size()).forEach(i -> {
-            result.addAll(findAllFieldNamesFromJSON(result, currentField+"["+i+"]", node.get(i)));
+            result.addAll(findAllFieldNamesFromJSON(result, currentField + "[" + i + "]", node.get(i)));
         });
 
         return result;
@@ -156,7 +160,9 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
 
         double similarity = calculateCosineSimilarity(vector1, vector2);
 
-        assertTrue("texts are not similar ("+field1.asText()+", "+field2.asText()+"), similarity: "+ similarity, similarity >= minSimilarityThreshold);
+        assertTrue(
+                String.format("Texts are not similar ( %s, %s ), similarity: %.2f", field1.asText(), field2.asText(), similarity),
+                similarity >= minSimilarityThreshold);
     }
 
     @SneakyThrows
@@ -210,42 +216,31 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
 
     private JsonNode getNodeByAttributePath(JsonNode body, String path) {
         var attributes = path.split("\\.");
+
         if(attributes.length == 1 && attributes[0].isEmpty()) {
+
             return body;
+
         }
+
         var result = body;
-
         String currentAttribute = attributes[0];
-
         var isArrayIndex = currentAttribute.contains("[");
         var pathWithoutFirstAttribute = String.join(".", Arrays.copyOfRange(attributes, 1, attributes.length));
+
         if(isArrayIndex) {
             String currentAttributeName = currentAttribute.substring(0, currentAttribute.indexOf("["));
             int index = Integer.parseInt(currentAttribute.substring(currentAttribute.indexOf("[")+1, currentAttribute.indexOf("]")));
+
             return getNodeByAttributePath(result.path(currentAttributeName).get(index), pathWithoutFirstAttribute);
         }
+
         return getNodeByAttributePath(result.path(currentAttribute), pathWithoutFirstAttribute);
     }
 
-    private static JsonNode pathNormalAttribute(String attribute, JsonNode result) {
-
-        result = result.path(attribute);
-
-        return result;
-    }
-
-    private static JsonNode pathArrayIndex(String attribute, JsonNode result) {
-
-        var index = Integer.parseInt(attribute.substring(attribute.indexOf("[")+1, attribute.indexOf("]")));
-        var variableName = attribute.substring(0, attribute.indexOf("["));
-
-        result = result.path(variableName).get(index);
-
-        return result;
-    }
-
+    @SneakyThrows
     private void compareIfExactSame(ActualResponse response) throws JSONException {
-        JsonUtils.assertJsonEquals(body.toString(), response.body());
+        JsonUtils.assertJsonEquals(bodyAsJson, response.body());
         Assert.assertEquals(((ActualRestResponse) response).getStatusCode(), httpCode);
     }
 }
