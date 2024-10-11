@@ -41,3 +41,6 @@ mvnw.cmd
 
 *.gpg
 *.gpg.asc
+
+### Gradle ###
+.gradle/
