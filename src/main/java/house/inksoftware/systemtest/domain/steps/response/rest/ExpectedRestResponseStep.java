@@ -35,9 +35,9 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         var objectMapper = new ObjectMapper();
         var root = objectMapper.readTree(json);
 
-        int httpCode = JsonPath.parse(json).read("httpCode");
+        var httpCode = root.get("httpCode").asInt();
         var body = root.path("body");
-        var bodyAsJson = JsonPath.parse((Object) JsonPath.parse(json).read("body")).jsonString();
+        var bodyAsJson = JsonPath.parse(json).jsonString();
         var verification = root.path("verification");
 
         Set<String> verificationFieldSet = new HashSet<>();
@@ -60,15 +60,17 @@ public class ExpectedRestResponseStep implements ExpectedResponseStep {
         var objectMapper = new ObjectMapper();
         var actualResponseBody = objectMapper.readTree(response.body());
 
-        compareHttpStatuses(response);
+        compareHttpStatuses(actualResponseBody);
+
+        actualResponseBody = actualResponseBody.path("body");
 
         compareUsingVerification(actualResponseBody);
         compareIfExactSame(actualResponseBody);
 
     }
 
-    private void compareHttpStatuses(ActualResponse response) {
-        assertEquals(httpCode, ((ActualRestResponse) response).getStatusCode());
+    private void compareHttpStatuses(JsonNode actualResponseBody) {
+        assertEquals(httpCode, actualResponseBody.get("httpCode").asInt());
     }
 
     private void compareIfExactSame(JsonNode actualResponseBody) {
