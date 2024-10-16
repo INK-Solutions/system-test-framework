@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'house.inksoftware'
-version 'java-21-0.2.0'
+version 'java-21-0.1.1'
 
 java {
     sourceCompatibility = '21'
@@ -82,8 +82,8 @@ publishing {
 }
 
 signing {
-   sign configurations.archives
-   sign publishing.publications.mavenJava
+    sign configurations.archives
+    sign publishing.publications.mavenJava
 }
 
 dependencies {
@@ -97,9 +97,6 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2'
     implementation 'commons-io:commons-io:2.12.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
-
-
 
     implementation 'org.apache.kafka:kafka-clients:3.6.0'
     implementation 'tech.allegro.schema.json2avro:converter:0.2.15'
