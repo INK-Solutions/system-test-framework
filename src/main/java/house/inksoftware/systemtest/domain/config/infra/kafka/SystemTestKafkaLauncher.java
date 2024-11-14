@@ -2,6 +2,7 @@ package house.inksoftware.systemtest.domain.config.infra.kafka;
 
 import house.inksoftware.systemtest.domain.config.infra.SystemTestResourceLauncher;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.EmbeddedKafkaZKBroker;
 
 import static house.inksoftware.systemtest.domain.config.infra.SystemTestResourceLauncher.Type.KAFKA;
 
@@ -10,7 +11,7 @@ public class SystemTestKafkaLauncher implements SystemTestResourceLauncher {
 
     @Override
     public void setup() {
-        embeddedKafka = new EmbeddedKafkaBroker(1, true, 1);
+        embeddedKafka = new EmbeddedKafkaZKBroker(1, true, 1);
         embeddedKafka.kafkaPorts(9092);
         embeddedKafka.afterPropertiesSet();
         System.setProperty("spring.embedded.kafka.brokers", embeddedKafka.getBrokersAsString());
