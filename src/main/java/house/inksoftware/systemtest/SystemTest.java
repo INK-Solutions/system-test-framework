@@ -9,6 +9,7 @@ import house.inksoftware.systemtest.domain.config.infra.InfrastructureConfigurat
 import house.inksoftware.systemtest.domain.config.infra.InfrastructureLauncher;
 import house.inksoftware.systemtest.domain.config.infra.SystemTestResourceLauncher;
 import house.inksoftware.systemtest.domain.config.infra.kafka.incoming.KafkaEventProcessedCallback;
+import house.inksoftware.systemtest.domain.config.infra.rest.TestRestTemplateConfig;
 import house.inksoftware.systemtest.domain.context.SystemTestContext;
 import house.inksoftware.systemtest.domain.steps.request.RequestStep;
 import house.inksoftware.systemtest.domain.steps.request.RequestStepFactory;
@@ -17,13 +18,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
@@ -40,6 +41,7 @@ import static org.springframework.test.context.TestExecutionListeners.MergeMode.
 @Slf4j
 @TestExecutionListeners(value = {SystemTest.class}, mergeMode = MERGE_WITH_DEFAULTS)
 @ActiveProfiles("systemtest")
+@Import(TestRestTemplateConfig.class)
 @RequiredArgsConstructor
 @RunWith(SpringRunner.class)
 public class SystemTest implements TestExecutionListener {
@@ -61,16 +63,16 @@ public class SystemTest implements TestExecutionListener {
     @Override
     public void beforeTestClass(TestContext testContext) throws Exception {
         Optional<File> systemTestYaml = findSystemTestYaml();
-        Assert.assertTrue(
+        Assertions.assertTrue(
+                systemTestYaml.isPresent(),
                 "File application-systemtest.yml is not found! " +
-                "Please add it if it's not present or rename existing test yml file to application-systemtest.yml",
-                systemTestYaml.isPresent()
+                "Please add it if it's not present or rename existing test yml file to application-systemtest.yml"
         );
 
         Optional<File> systemTestConfFile = findSystemTestConfig();
-        Assert.assertTrue(
-                "File system-test-configuration.json is not found! Please add it and define your infra requirements.",
-                systemTestConfFile.isPresent()
+        Assertions.assertTrue(
+                systemTestConfFile.isPresent(),
+                "File system-test-configuration.json is not found! Please add it and define your infra requirements."
         );
         LinkedHashMap<String, Object> infrastructure = findInfraConfig(systemTestConfFile.get());
         infrastructureLauncher.launchDb(testContext, infrastructure);

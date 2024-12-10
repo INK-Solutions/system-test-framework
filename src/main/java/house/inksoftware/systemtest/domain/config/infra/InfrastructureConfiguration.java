@@ -39,7 +39,13 @@ public class InfrastructureConfiguration {
                 String jsonContract = objectMapper.writeValueAsString(contract);
                 try {
                     HttpEntity<String> request = new HttpEntity<>(jsonContract);
-                    restTemplate.postForObject("http://localhost:4771/add", request, String.class);
+                    String host;
+                    if (System.getenv("TEST_HOST") == null) {
+                        host = "localhost";
+                    } else {
+                        host = System.getenv("TEST_HOST");
+                    }
+                    restTemplate.postForObject("http://" + host + ":4771/add", request, String.class);
                 } catch (Exception e) {
                     log.error(e.getMessage());
                 }
