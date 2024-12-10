@@ -40,10 +40,10 @@ public class InfrastructureConfiguration {
                 try {
                     HttpEntity<String> request = new HttpEntity<>(jsonContract);
                     String host;
-                    if (System.getenv("CI").equalsIgnoreCase("true")) {
-                        host = "docker";
-                    } else {
+                    if (System.getenv("TEST_HOST") == null) {
                         host = "localhost";
+                    } else {
+                        host = System.getenv("TEST_HOST");
                     }
                     restTemplate.postForObject("http://" + host + ":4771/add", request, String.class);
                 } catch (Exception e) {
