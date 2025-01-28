@@ -20,7 +20,8 @@ public class InfrastructureConfiguration {
                                   Integer port) throws Exception {
         if (systemTestConfiguration.hasKafka()) {
             systemTestConfiguration.getKafkaConfiguration().setKafkaEventProcessedCallback(kafkaEventProcessedCallback);
-        } else if (systemTestConfiguration.hasGrpc()) {
+        }
+        if (systemTestConfiguration.hasGrpc()) {
             finishGprcConfig(systemTestConfiguration.getGrpcConfiguration(), restTemplate);
         }
 
