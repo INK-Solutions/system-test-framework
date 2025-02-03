@@ -10,7 +10,9 @@ import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -20,17 +22,33 @@ public class SqsConsumerService {
     private final SqsClient sqsClient;
     private final List<SqsQueueDefinition> queues;
 
+    public void find(String queueName, List<String> bodies) {
+        log.info("Finding messages with bodies: {} in queue: {}", bodies, queueName);
 
-    public void find(String queueName, String body) {
         var definition = findDefinition(queueName);
         var fullQueueName = toQueueName(definition);
         var url = findUrl(fullQueueName);
         var messages = poll(url);
-        var result = messages.stream()
-                .filter(message -> JsonUtils.isEqual(body, message.body()))
-                .findAny()
-                .orElseThrow(() -> new AssertionError("It was expect that queue " + queueName + " would have a message " + body));
-        delete(url, result.receiptHandle());
+
+        var remainingMessages = new ArrayList<>(messages);
+        var matchedMessages = new ArrayList<Message>();
+
+        for (String expectedBody : bodies) {
+            var matchingMessage = remainingMessages.stream()
+                    .filter(message -> JsonUtils.isEqual(expectedBody, message.body()))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError(String.format(
+                            "Expected message not found in queue %s: %s%nAvailable messages: %s",
+                            queueName,
+                            expectedBody,
+                            remainingMessages.stream().map(Message::body).collect(Collectors.toList())
+                    )));
+
+            matchedMessages.add(matchingMessage);
+            remainingMessages.remove(matchingMessage);
+        }
+
+        matchedMessages.forEach(message -> delete(url, message.receiptHandle()));
     }
 
     private SqsQueueDefinition findDefinition(String name) {

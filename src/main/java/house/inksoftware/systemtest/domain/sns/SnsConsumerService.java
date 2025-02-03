@@ -2,6 +2,8 @@ package house.inksoftware.systemtest.domain.sns;
 
 import house.inksoftware.systemtest.domain.sns.SnsTopicDefinition.Protocol;
 import house.inksoftware.systemtest.domain.sqs.SqsConsumerService;
+
+import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,7 @@ public class SnsConsumerService {
         try {
             var definition = findDefinition(topicName);
             if (definition.getProtocol().equals(Protocol.SQS)) {
-                sqsConsumerService.find(definition.defaultSubscriberName(), body);
+                sqsConsumerService.find(definition.defaultSubscriberName(), Collections.singletonList(body));
             }
         } catch (AssertionError e) {
             throw new AssertionError("It was expect that SNS topic " + topicName + " would have a message " + body);
