@@ -73,10 +73,7 @@ publishing {
         mavenLocal()
         maven {
             url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = '95KontyU'
-                password = 'qT07yl78KYf69ccAtwkv0GOWkaZPz5gHAb0681Z6S999'
-            }
+
         }
     }
 }
