@@ -25,18 +25,28 @@ public class ExecutableDatabaseRequestStep implements ExecutableRequestStep {
 
     @SneakyThrows
     private void makeDbCall() {
-        try (Connection connection = getConnection()) {
-            CallableStatement query = connection.prepareCall(this.query);
-            boolean hasResults = query.execute();
+        int maxAttempts = 6;
+        int attemptDelay = 500;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try (Connection connection = getConnection()) {
+                CallableStatement query = connection.prepareCall(this.query);
+                boolean hasResults = query.execute();
 
-            if (contextVariableName.isPresent() && hasResults) {
-                try (ResultSet resultSet = query.getResultSet()) {
-                    resultSet.next();
-                    context.put(contextVariableName.get(), resultSet.getString(1));
+                if (hasResults) {
+                    try (ResultSet resultSet = query.getResultSet()) {
+                        if (resultSet.next()) {
+                            context.put(contextVariableName.get(), resultSet.getString(1));
+                            return;
+                        }
+                    }
+                }
+                if (attempt < maxAttempts) {
+                    Thread.sleep(attemptDelay);
+                } else {
+                    throw new IllegalStateException("Expected result not found after " + maxAttempts + " attempts for query: " + query);
                 }
             }
         }
-
     }
 
     private static Connection getConnection() {
