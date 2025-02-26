@@ -25,16 +25,18 @@ public class ExecutableDatabaseRequestStep implements ExecutableRequestStep {
 
     @SneakyThrows
     private void makeDbCall() {
-        try (Connection connection = getConnection();
-             CallableStatement query = connection.prepareCall(this.query);
-             ResultSet resultSet = query.executeQuery()) {
-
-            if (contextVariableName.isPresent() && resultSet.next()) {
-                String value = resultSet.getString(1);
-                context.put(contextVariableName.get(), value);
+        try (Connection connection = getConnection()) {
+            CallableStatement query = connection.prepareCall(this.query);
+            boolean hasResults = query.execute();
+            if (contextVariableName.isPresent() && hasResults) {
+                try (ResultSet resultSet = query.getResultSet()) {
+                    resultSet.next();
+                    context.put(contextVariableName.get(), resultSet.getString(1));
+                }
             }
         }
     }
+
     private static Connection getConnection() {
         Connection result = null;
         try {
