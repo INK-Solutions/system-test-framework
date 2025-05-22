@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'house.inksoftware'
-version 'java-21-0.1.9'
+version 'java-21-0.1.11'
 
 java {
     sourceCompatibility = '21'
@@ -72,7 +72,6 @@ publishing {
     repositories {
         mavenLocal()
         maven {
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
 
         }
     }
@@ -102,6 +101,7 @@ dependencies {
     implementation 'org.apache.kafka:kafka-clients:3.7.1'
     implementation 'org.springframework.kafka:spring-kafka:3.2.4'
     implementation 'org.springframework.kafka:spring-kafka-test:3.2.4'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
 
     implementation group: 'cloud.localstack', name: 'localstack-utils', version: '0.2.23'
     implementation 'software.amazon.awssdk:sqs:2.17.98'

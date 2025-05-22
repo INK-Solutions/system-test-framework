@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.skyscreamer.jsonassert.JSONAssert;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -18,14 +20,22 @@ import java.util.Map;
 import java.util.UUID;
 
 public class JsonUtils {
+
     public static void assertJsonEquals(String expected, String actual) throws JSONException {
-        if (expected.startsWith("[")) {
-            JSONAssert.assertEquals(new JSONArray(expected), new JSONArray(actual), false);
-        } else {
-            JSONAssert.assertEquals(new JSONObject(expected), new JSONObject(actual), false);
+
+        try {
+            String normalizedExpected = normalizeDecimals(expected);
+            String normalizedActual = normalizeDecimals(actual);
+
+            if (normalizedExpected.startsWith("[")) {
+                JSONAssert.assertEquals(new JSONArray(normalizedExpected), new JSONArray(normalizedActual), false);
+            } else {
+                JSONAssert.assertEquals(new JSONObject(normalizedExpected), new JSONObject(normalizedActual), false);
+            }
+        } catch (AssertionError e) {
+            throw e;
         }
     }
-
     public static boolean isEqual(String expected, String actual) {
         try {
             assertJsonEquals(expected, actual);
@@ -81,5 +91,28 @@ public class JsonUtils {
         private void missingKey(Object key) {
             throw new IllegalStateException("Missing required placeholder: " + key + ". Make sure you store it in callback context for one of previous calls. More info: https://github.com/INK-Solutions/system-test-framework#callbacks");
         }
+    }
+
+    private static String normalizeDecimals(String jsonString) {
+        if (jsonString == null || jsonString.isEmpty()) {
+            return jsonString;
+        }
+        Pattern decimalPattern = Pattern.compile("(\\d+\\.\\d*?)0+(?=\\s*[,}\\]])");
+
+        String result = jsonString;
+        Matcher matcher = decimalPattern.matcher(result);
+
+        while (matcher.find()) {
+            String originalNumber = matcher.group(0);
+            String baseNumber = matcher.group(1);
+
+            if (baseNumber.endsWith(".")) {
+                baseNumber += "0";
+            }
+
+            result = result.replace(originalNumber, baseNumber);
+        }
+
+        return result;
     }
 }
