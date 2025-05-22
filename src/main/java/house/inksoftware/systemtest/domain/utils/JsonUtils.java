@@ -22,7 +22,6 @@ import java.util.UUID;
 public class JsonUtils {
 
     public static void assertJsonEquals(String expected, String actual) throws JSONException {
-
         try {
             String normalizedExpected = normalizeDecimals(expected);
             String normalizedActual = normalizeDecimals(actual);
@@ -36,6 +35,7 @@ public class JsonUtils {
             throw e;
         }
     }
+
     public static boolean isEqual(String expected, String actual) {
         try {
             assertJsonEquals(expected, actual);
@@ -97,10 +97,11 @@ public class JsonUtils {
         if (jsonString == null || jsonString.isEmpty()) {
             return jsonString;
         }
-        Pattern decimalPattern = Pattern.compile("(\\d+\\.\\d*?)0+(?=\\s*[,}\\]])");
 
         String result = jsonString;
-        Matcher matcher = decimalPattern.matcher(result);
+
+        Pattern trailingZerosPattern = Pattern.compile("(\\d+\\.\\d*?)0+(?=\\s*[,}\\]\\s])");
+        Matcher matcher = trailingZerosPattern.matcher(result);
 
         while (matcher.find()) {
             String originalNumber = matcher.group(0);
@@ -112,7 +113,6 @@ public class JsonUtils {
 
             result = result.replace(originalNumber, baseNumber);
         }
-
         return result;
     }
 }
