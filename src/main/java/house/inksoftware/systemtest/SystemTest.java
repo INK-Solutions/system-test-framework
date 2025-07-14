@@ -122,8 +122,9 @@ public class SystemTest implements TestExecutionListener {
 
     private void testBusinessLogic(SystemTestConfiguration config, File systemTestConfig) {
         Arrays.stream(systemTestConfig.getParentFile().listFiles())
-              .filter(File::isDirectory)
-              .forEach(testBaseFolder -> test(config, testBaseFolder));
+                .filter(File::isDirectory)
+                .sorted(Comparator.comparing(File::getName))
+                .forEach(testBaseFolder -> test(config, testBaseFolder));
     }
 
     @SneakyThrows
