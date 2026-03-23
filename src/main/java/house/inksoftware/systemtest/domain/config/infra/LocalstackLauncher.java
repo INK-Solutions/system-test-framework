@@ -6,18 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class LocalstackLauncher {
-  
+
     private static boolean started = false;
-  
+
     public static void launch() {
         if (started) {
             log.info("Localstack has already launched");
             return;
         }
-      
+
         Localstack.INSTANCE.startup(LocalstackDockerConfiguration.builder()
-            .useSingleDockerContainer(true)
-            .build());  
+                .imageTag("4.14")
+                .useSingleDockerContainer(true)
+                .build());
         started = true;
-    }  
+    }
 }
