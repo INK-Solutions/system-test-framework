@@ -1,5 +1,6 @@
 package house.inksoftware.systemtest.domain.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
@@ -18,11 +19,23 @@ import java.util.Map;
 import java.util.UUID;
 
 public class JsonUtils {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     public static void assertJsonEquals(String expected, String actual) throws JSONException {
-        if (expected.startsWith("[")) {
-            JSONAssert.assertEquals(new JSONArray(expected), new JSONArray(actual), false);
+        String normalizedExpected = normalizeNumbers(expected);
+        String normalizedActual = normalizeNumbers(actual);
+        if (normalizedExpected.startsWith("[")) {
+            JSONAssert.assertEquals(new JSONArray(normalizedExpected), new JSONArray(normalizedActual), false);
         } else {
-            JSONAssert.assertEquals(new JSONObject(expected), new JSONObject(actual), false);
+            JSONAssert.assertEquals(new JSONObject(normalizedExpected), new JSONObject(normalizedActual), false);
+        }
+    }
+
+    private static String normalizeNumbers(String json) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(OBJECT_MAPPER.readTree(json));
+        } catch (Exception e) {
+            return json;
         }
     }
 
