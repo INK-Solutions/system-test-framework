@@ -34,7 +34,7 @@ public class SystemTestMockedRestServerLauncher implements SystemTestResourceLau
             Map<String, String> envVariables = new HashMap<>();
             envVariables.put("MOCKSERVER_INITIALIZATION_JSON_PATH", "/config/" + updatedConfigFile.getName());
 
-            container = new GenericContainer("mockserver/mockserver")
+            container = new GenericContainer("mockserver/mockserver:5.15.0")
                     .withCopyFileToContainer(MountableFile.forHostPath(updatedConfigFile.getPath()), "/config/" + updatedConfigFile.getName())
                     .withEnv(envVariables)
                     .waitingFor(Wait.forLogMessage(".*started on port:.*", 1));
